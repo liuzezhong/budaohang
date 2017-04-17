@@ -1,0 +1,67 @@
+<include file="Index/header" />
+<nav class="navbar navbar-default" role="navigation">
+    <div class="container">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="#">
+                <img alt="Brand" src="Public/img/1.jpg" style="width: 25px; height: 25px;">
+            </a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+            <ul class="nav navbar-nav">
+                <li class="active"><a href="#">首页</a></li>
+                <li><a href="category.html">产品分类</a></li>
+                <li><a href="#">产品集</a></li>
+                <li><a href="#">产品推荐</a></li>
+                <li><a href="#">经典工具集</a></li>
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-navicon"></i> <span class="caret"></span></a>
+                    <ul class="dropdown-menu" role="menu">
+                        <li><a href="#">官方博客</a></li>
+                        <li><a href="#">关于我们</a></li>
+                        <li class="divider"></li>
+                        <li><a href="#">常见问题</a></li>
+                    </ul>
+                </li>
+            </ul>
+            <?php
+                if(getLoginHeaderImg()) {
+                    $status = 1;
+                }else {
+                    $status = 0;
+                }
+            ?>
+            <if condition="$status eq 1">
+                <form class="navbar-form navbar-right " role="search">
+                    <button type="button" class="btn btn-default navbar-button btn-sm"><span style="color:#999999">分享新产品</span></button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" ><img class="img-circle" src="<?php echo getLoginHeaderImg() ?>" alt="用户头像" style="width: 34px; height: 34px;"></a>
+                    <ul class="dropdown-menu " role="menu">
+                        <li ><a href="#" style="color : #999999">我的主页</a></li>
+                        <li><a href="index.php?m=home&c=user&a=userset" style="color : #999999">个人设置</a></li>
+                        <li class="divider"></li>
+                        <li><a href="index.php?m=home&c=login&a=loginOut" style="color : #999999">退出登录</a></li>
+                    </ul>
+                </form>
+            <else />
+                <form class="navbar-form navbar-right ">
+                    <a href="index.php?m=home&c=register" class="a-nactive"><button type="button" class="btn btn-default btn-sm "><span style="color:#999999">注册账户</span></button>&nbsp;</a>
+                    <a href="index.php?m=home&c=login" class="a-nactive"><button type="button" class="btn btn-default btn-sm"><span style="color:#999999">用户登录</span></button>&nbsp;</a>
+
+                </form>
+            </if>
+        </div><!-- /.navbar-collapse -->
+    </div><!-- /.container-fluid -->
+</nav>
+<hr class="hr-gradient-e2">
+<hr class="hr-gradient-f0">
+<hr class="hr-gradient-f4">
+<hr class="hr-gradient-f7">
+<hr class="hr-gradient-f8">

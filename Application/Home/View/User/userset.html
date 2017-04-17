@@ -1,0 +1,137 @@
+
+
+  <body style="background-color:#FFFFFF;">
+    <include file="Index/nav" />
+
+  <div class="container">
+  	<div class="row">
+  		<div class="col-md-12 homepage-header">
+  			<div class="row">
+          <div class="col-md-12 homepage-img">
+            <form>
+              <!--<div id="queue"></div>
+              <input id="file_upload" name="file_upload" type="file" multiple="true">-->
+              <img class="img-circle" style="width: 90px; height: 90px;" id="upload_org_code_img" src="{$userinfo.headerimg}" width="150" height="150">   <!--显示缩略图-->
+              <!--<input id="file_upload_image" name="thumb" type="hidden" multiple="true" value="">-->
+            </form>
+                      <!--<img class="img-circle" src="{$userinfo.headerimg}" alt="用户头像" style="width: 80px; height: 80px;">-->
+
+            
+          </div>
+        </div>
+        <!--<div class="row">
+          <div class="col-md-12 homepage-name">
+            <h4>{$userinfo.username}</h4>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-12 homepage-position">
+            <small class="homepage-font-color">{$userinfo.company|getCompany}/{$userinfo.job|getCompany}</small>
+          </div>
+        </div>-->
+          <div class="row">
+            <div class="col-md-12 homepage-name ">
+              <div class="container">
+                <div class="row">
+                  <div class="col-md-5">
+
+                  </div>
+                  <div class="col-md-2">
+                    <div class="userset-button">
+                      <input id="file_upload" name="file_upload" type="file" multiple="true">
+                      <input id="file_upload_image" name="thumb" type="hidden" multiple="true" value="">
+                    </div>
+                  </div>
+                  <div class="col-md-5">
+
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+  		</div>
+  	</div>
+  </div>
+  <hr class="personset-hr">
+
+  <div class="container">
+
+    <div class="row">
+      <div class="col-md-3">
+      </div>
+      <div class="col-md-6">
+        <form class="form-horizontal personset-form">
+          <div class="form-group">
+            <label for="inputEmail3" class="col-sm-2 control-label">昵&nbsp;称</label>
+            <div class="col-sm-10">
+              <input type="text" class="form-control" name="username"  placeholder="{$userinfo.username}" style="max-width:300px;" value="{$userinfo.username}">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="inputPassword3" class="col-sm-2 control-label">号&nbsp;码</label>
+            <div class="col-sm-10">
+              <input type="text" class="form-control" name="mobile" placeholder="{$userinfo.mobile}" style="max-width:300px;" value="{$userinfo.mobile}">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="inputPassword3" class="col-sm-2 control-label">微&nbsp;信</label>
+            <div class="col-sm-10">
+              <input type="text" class="form-control" name="wechat" id="inputPassword3" placeholder="{$userinfo.wechat}" style="max-width:300px;" value="{$userinfo.wechat}">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="inputPassword3" class="col-sm-2 control-label">邮&nbsp;箱</label>
+            <div class="col-sm-10">
+              <input type="text" class="form-control" name="email" id="inputPassword3" placeholder="{$userinfo.email}" style="max-width:300px;" value="{$userinfo.email}">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="inputEmail3" class="col-sm-2 control-label">组&nbsp;织</label>
+            <div class="col-sm-10">
+              <input type="text" class="form-control" name="company" id="inputEmail3" placeholder="{$userinfo.company}" style="max-width:300px;" value="{$userinfo.company}">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="inputEmail3" class="col-sm-2 control-label">职&nbsp;位</label>
+            <div class="col-sm-10">
+              <input type="text" class="form-control" name="job" id="inputEmail3" placeholder="{$userinfo.job}" style="max-width:300px;" value="{$userinfo.job}">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="inputEmail3" class="col-sm-2 control-label">个性签名</label>
+            <div class="col-sm-10">
+              <textarea class="form-control" rows="2" name="describes" style="max-width:300px;">{$userinfo.describes}</textarea>
+            </div>
+          </div>
+          <br>
+          
+          <div class="form-group">
+            <div class="col-sm-offset-2 col-sm-10">
+              <input class="sy-only" type="hidden" name="userid" value="{$userinfo.user_id}">
+              <button type="button" class="btn btn-default btn-block userlogin-btn" style="max-width:300px;" onclick="user.check()">更新资料</button>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="col-md-3">
+      </div>
+    </div>
+  </div>
+ 
+
+  
+</div>
+
+
+
+
+
+
+  <br> <br> 
+ <include file="Index/footer" />
+
+   
+
+
