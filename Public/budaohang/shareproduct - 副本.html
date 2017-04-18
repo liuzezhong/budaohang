@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" ">
+    <title>不导航|发现好产品</title>
+
+    <!-- Bootstrap -->
+    <link href="css/bootstrap/bootstrap.css" rel="stylesheet">
+
+    <link rel="stylesheet" href="plugin/jquery-span/jq22.css">
+
+
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+      <script src="http://cdn.bootcss.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="http://cdn.bootcss.com/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+     <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="js/jquery/jquery-1.11.1.js"></script>
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    
+    <script src="js/bootstrap/bootstrap.js"></script>
+
+
+
+   
+
+
+    
+  </head>
+  
+  <body>
+    <div class="demo">
+    
+    <div class="plus-tag tagbtn clearfix" id="myTags"></div>
+
+    <div class="plus-tag-add">
+        <form id="" action="" >
+        <a href="javascript:void(0);">展开推荐标签</a>
+                    
+                
+        </form>
+    </div><!--plus-tag-add end-->
+    
+    <div id="mycard-plus" style="display:none;">
+        <div class="default-tag tagbtn">
+            <div class="clearfix">
+                <a value="-1" title="Travel" href="javascript:void(0);"><span>Travel</span><em></em></a>
+                <a value="-1" title="Internet" href="javascript:void(0);"><span>Internet</span><em></em></a>
+                <a value="-1" title="it" href="javascript:void(0);"><span>it</span><em></em></a>
+                <a value="-1" title="French" href="javascript:void(0);"><span>French</span><em></em></a>
+                <a value="-1" title="English" href="javascript:void(0);"><span>English</span><em></em></a>
+                <a value="-1" title="JAVA" href="javascript:void(0);"><span>JAVA</span><em></em></a>
+                <a value="-1" title="Photograph" href="javascript:void(0);"><span>Photograph</span><em></em></a>
+                <a value="-1" title="Sculpture" href="javascript:void(0);"><span>Sculpture</span><em></em></a>
+                <a value="-1" title="Drawing" href="javascript:void(0);"><span>Drawing</span><em></em></a>
+                <a value="-1" title="Jazziness" href="javascript:void(0);"><span>Jazziness</span><em></em></a>
+                <a value="-1" title="Running" href="javascript:void(0);"><span>Running</span><em></em></a>
+                <a value="-1" title="PHP" href="javascript:void(0);"><span>PHP</span><em></em></a>
+                <a value="-1" title="Dreamweaver" href="javascript:void(0);"><span>Dreamweaver</span><em></em></a>
+                <a value="-1" title="Shopping" href="javascript:void(0);"><span>Shopping</span><em></em></a>
+                <a value="-1" title="Writing" href="javascript:void(0);"><span>Writing</span><em></em></a>
+                <a value="-1" title="Diving" href="javascript:void(0);"><span>Diving</span><em></em></a>
+                <a value="-1" title="Basketball" href="javascript:void(0);"><span>Basketball</span><em></em></a>
+                <a value="-1" title="Reading" href="javascript:void(0);"><span>Reading</span><em></em></a>
+                <div class="plus-tag-add">
+                    <form id="" action="" >
+            
+                    
+                    <input id="" name="" type="text" class="stext" maxlength="20" />
+                
+            
+                    <button type="button">add labels</button>
+                         
+                    
+                    
+                    
+                
+        </form>
+    </div>
+            </div>
+            
+        
+    </div><!--mycard-plus end-->
+        
+</div>
+
+
+
+<script type="text/javascript">
+    var FancyForm=function(){
+    return{
+        inputs:".FancyForm input, .FancyForm textarea",
+        setup:function(){
+            var a=this;
+            this.inputs=$(this.inputs);
+            a.inputs.each(function(){
+                var c=$(this);
+                a.checkVal(c)
+            });
+            a.inputs.on("keyup blur",function(){
+                var c=$(this);
+                a.checkVal(c);
+            });
+        },checkVal:function(a){
+            a.val().length>0?a.parent("li").addClass("val"):a.parent("li").removeClass("val")
+        }
+    }
+}();
+
+
+
+
+$(document).ready(function() {
+    FancyForm.setup();
+});
+
+
+
+
+var searchAjax=function(){};
+var G_tocard_maxTips=30;
+
+$(function(){(
+    function(){
+        
+        var a=$(".plus-tag");
+        
+        $(".plus-tag a em").on("click",function(){
+            console.log(a);
+            var c=$(this).parents("a"),b=c.attr("title"),d=c.attr("value");
+            console.log(b);
+            delTips(b,d)
+        });
+        
+        hasTips=function(b){
+            var d=$("a",a),c=false;
+            d.each(function(){
+                if($(this).attr("title")==b){
+                    c=true;
+                    return false
+                }
+            });
+            return c
+        };
+
+        isMaxTips=function(){
+            return  
+            $("a",a).length>=G_tocard_maxTips
+        };
+
+        setTips=function(c,d){
+            if(hasTips(c)){
+                return false
+            }if(isMaxTips()){
+                alert("最多添加"+G_tocard_maxTips+"个标签！");
+                return false
+            }
+            var b=d?'value="'+d+'"':"";
+            a.append($("<a "+b+' title="'+c+'" href="javascript:void(0);" ><span>'+c+"</span><em></em></a>"));
+            searchAjax(c,d,true);
+            return true
+        };
+
+        delTips=function(b,c){
+            if(!hasTips(b)){
+                return false
+            }
+            $("a",a).each(function(){
+                var d=$(this);
+                if(d.attr("title")==b){
+                    d.remove();
+                    return false
+                }
+            });
+            searchAjax(b,c,false);
+            return true
+        };
+
+        getTips=function(){
+            var b=[];
+            $("a",a).each(function(){
+                b.push($(this).attr("title"))
+            });
+            return b
+        };
+
+        getTipsId=function(){
+            var b=[];
+            $("a",a).each(function(){
+                b.push($(this).attr("value"))
+            });
+            return b
+        };
+        
+        getTipsIdAndTag=function(){
+            var b=[];
+            $("a",a).each(function(){
+                b.push($(this).attr("value")+"##"+$(this).attr("title"))
+            });
+            return b
+        }
+    }
+    
+)()});
+
+
+
+
+
+
+
+// 更新选中标签标签
+$(function(){
+    setSelectTips();
+    $('.plus-tag').append($('.plus-tag a'));
+});
+var searchAjax = function(name, id, isAdd){
+    setSelectTips();
+};
+// 搜索
+(function(){
+    var $b = $('.plus-tag-add button'),$i = $('.plus-tag-add input');
+    $i.keyup(function(e){
+        if(e.keyCode == 13){
+            $b.click();
+        }
+    });
+    $b.click(function(){
+        var name = $i.val().toLowerCase();
+        if(name != '') setTips(name,-1);
+        $i.val('');
+        $i.select();
+    });
+})();
+// 推荐标签
+(function(){
+    var str = ['展开推荐标签', '收起推荐标签']
+    $('.plus-tag-add a').click(function(){
+        var $this = $(this),
+                $con = $('#mycard-plus');
+
+        if($this.hasClass('plus')){
+            $this.removeClass('plus').text(str[0]);
+            $con.hide();
+        }else{
+            $this.addClass('plus').text(str[1]);
+            $con.show();
+        }
+    });
+    $('.default-tag a').on('click', function(){
+        var $this = $(this),
+                name = $this.attr('title'),
+                id = $this.attr('value');
+        setTips(name, id);
+    });
+    // 更新高亮显示
+    setSelectTips = function(){
+        var arrName = getTips();
+        if(arrName.length){
+            $('#myTags').show();
+        }else{
+            $('#myTags').hide();
+        }
+        $('.default-tag a').removeClass('selected');
+        $.each(arrName, function(index,name){
+            $('.default-tag a').each(function(){
+                var $this = $(this);
+                if($this.attr('title') == name){
+                    $this.addClass('selected');
+                    return false;
+                }
+            })
+        });
+    }
+
+})();
+// 更换链接
+(function(){
+    var $b = $('#change-tips'),
+        $d = $('.default-tag div'),
+        len = $d.length,
+        t = 'nowtips';
+    $b.click(function(){
+        var i = $d.index($('.default-tag .nowtips'));
+        i = (i+1 < len) ? (i+1) : 0;
+        $d.hide().removeClass(t);
+        $d.eq(i).show().addClass(t);
+    });
+    $d.eq(0).addClass(t);
+})();
+</script>
+  </body>
+</html>
