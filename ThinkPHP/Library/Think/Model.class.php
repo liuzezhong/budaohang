@@ -55,7 +55,7 @@ class Model {
     protected $_map             =   array();  // 字段映射定义
     protected $_scope           =   array();  // 命名范围定义
     // 是否自动检测数据表字段信息
-    protected $autoCheckFields  =   true;
+    protected $autoCheckFields  =   false;
     // 是否批处理验证
     protected $patchValidate    =   false;
     // 链操作方法列表

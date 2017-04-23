@@ -7,7 +7,7 @@
     <title>不导航|发现好产品</title>
 
     <!-- Bootstrap -->
-    <link href="Public/css/bootstrap/bootstrap.css" rel="stylesheet">
+    <link href="Public/css/bootstrap/bootstrap.min.css" rel="stylesheet">
     <link href="Public/css/bdh/main.css" rel="stylesheet">
 
     <link rel="stylesheet" href="Public/fonts/fontawesome/css/font-awesome.min.css">

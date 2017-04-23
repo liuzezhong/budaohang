@@ -112,4 +112,8 @@ class AdminModel extends Model {
         $res = $this->_db->where('user_id = ' . $id)->find();
         return $res;
     }
+
+    public function getAllUsers() {
+        return $this->_db->order('registertime desc')->select();
+    }
 }

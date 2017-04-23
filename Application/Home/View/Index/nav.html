@@ -1,4 +1,100 @@
 <include file="Index/header" />
+<style>
+
+
+
+    .z_photo {
+        width: 300px;
+        overflow: auto;
+        clear: both;
+        padding-top: 5px;
+        padding-bottom: 5px;
+
+
+    }
+
+    .z_photo img {
+        width: 100px;
+        height: 100px;
+    }
+
+    .z_addImg {
+        float: left;
+        padding-right: 10px;
+        padding-bottom: 10px;
+    }
+
+    .z_file {
+        width: 100px;
+        height: 100px;
+        background: url(Public/img/z_add.png) no-repeat;
+        background-size: 100% 100%;
+        float: left;
+        margin-right: 10px;
+    }
+
+    .z_file input::-webkit-file-upload-button {
+        width: 100px;
+        height: 100px;
+        position: absolute;
+        outline: 0;
+        opacity: 0;
+    }
+
+    .z_file input#file {
+        display: block;
+        width: auto;
+        border: 0;
+        vertical-align: middle;
+    }
+    /*遮罩层*/
+
+    .z_mask {
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, .5);
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 999;
+        display: none;
+    }
+
+    .z_alert {
+        width: 3rem;
+        height: 2rem;
+        border-radius: .2rem;
+        background: #fff;
+        font-size: .24rem;
+        text-align: center;
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        margin-left: -1.5rem;
+        margin-top: -2rem;
+    }
+
+    .z_alert p:nth-child(1) {
+        line-height: 1.5rem;
+    }
+
+    .z_alert p:nth-child(2) span {
+        display: inline-block;
+        width: 49%;
+        height: .5rem;
+        line-height: .5rem;
+        float: left;
+        border-top: 1px solid #ddd;
+    }
+
+    .z_cancel {
+        border-right: 1px solid #ddd;
+    }
+
+
+
+
+</style>
 <nav class="navbar navbar-default" role="navigation">
     <div class="container">
         <!-- Brand and toggle get grouped for better mobile display -->
@@ -17,7 +113,7 @@
         <!-- Collect the nav links, forms, and other content for toggling -->
         <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
             <ul class="nav navbar-nav">
-                <li class="active"><a href="#">首页</a></li>
+                <li class="active"><a href="{:U('home/index/index')}">首页</a></li>
                 <li><a href="category.html">产品分类</a></li>
                 <li><a href="#">产品集</a></li>
                 <li><a href="#">产品推荐</a></li>
@@ -33,7 +129,7 @@
                 </li>
             </ul>
             <?php
-                if(getLoginHeaderImg()) {
+                if($_SESSION['adminUser']['user_id']) {
                     $status = 1;
                 }else {
                     $status = 0;
@@ -41,7 +137,7 @@
             ?>
             <if condition="$status eq 1">
                 <form class="navbar-form navbar-right " role="search">
-                    <button type="button" class="btn btn-default navbar-button btn-sm"><span style="color:#999999">分享新产品</span></button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    <button type="button" class="btn btn-default navbar-button btn-sm" id="add-new-proudct"><span style="color:#999999">分享新产品</span></button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown" ><img class="img-circle" src="<?php echo getLoginHeaderImg() ?>" alt="用户头像" style="width: 34px; height: 34px;"></a>
                     <ul class="dropdown-menu " role="menu">
                         <li ><a href="#" style="color : #999999">我的主页</a></li>
@@ -65,3 +161,680 @@
 <hr class="hr-gradient-f4">
 <hr class="hr-gradient-f7">
 <hr class="hr-gradient-f8">
+
+<!-- Modal -->
+<div id="modal" class="modal-demo">
+    <button type="button" class="close" onclick="Custombox.close();">
+        <span>&times;</span><span class="sr-only">Close</span>
+    </button>
+    <h4 class="title">发现新产品</h4>
+
+    <div class="shareproduct-custombox-maxwidth">
+
+        <form class="form-horizontal" role="form" id="add-product-form">
+            <div class="form-group">
+                <label for="inputEmail3" class="col-sm-3 control-label form-group-label">产品名称</label>
+                <div class="col-sm-7">
+                    <input type="text" name="product_name" class="form-control  " id="inputEmail3" placeholder="如：不导航">
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="inputEmail3" class="col-sm-3 control-label form-group-label">产品官网</label>
+                <div class="col-sm-7">
+                    <input type="text" class="form-control  " id="inputEmail3" placeholder="以http://开头的有效网址">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="inputEmail3" class="col-sm-3 control-label form-group-label">产品描述</label>
+                <div class="col-sm-7">
+                    <input type="text" class="form-control  " id="inputEmail3" placeholder="用一句话来描述该产品的亮点">
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="inputEmail3" class="col-sm-3 control-label form-group-label">产品图片</label>
+                <div class="col-sm-7">
+                    <div class="z_photo">
+                        <div class="z_file">
+                        <input type="file" name="file" id="file" value="" accept="image/*" multiple onchange="imgChange('z_photo','z_file');" />
+                    </div>
+                </div>
+            </div>
+    </div>
+            <?php
+                //获取产品类型列表
+                $product_types = D('Product_type')->get_all_product_type();
+                $labels = D('Label')->get_all_label();
+
+            ?>
+    <div class="form-group">
+        <label for="inputEmail3" class="col-sm-3 control-label">产品类别</label>
+        <div class="col-sm-7">
+            <select class="form-control">
+                <option value="-1">请选择</option>
+                <volist name="product_types" id="type">
+                    <option value="{$type.type_id}">{$type.type_name}</option>
+                </volist>
+            </select>
+            <!--<input type="text" class="form-control  " id="inputEmail3" placeholder="如：工具类、社交类">-->
+        </div>
+    </div>
+    <div class="form-group">
+        <label for="inputEmail3" class="col-sm-3 control-label">支持平台</label>
+        <div class="col-sm-7">
+            <label class="checkbox-inline">
+                <input type="checkbox" id="inlineCheckbox1" value="option1"> Windows
+            </label>
+            <label class="checkbox-inline">
+                <input type="checkbox" id="inlineCheckbox2" value="option2"> Linux
+            </label>
+            <label class="checkbox-inline">
+                <input type="checkbox" id="inlineCheckbox3" value="option3"> IOS
+            </label>
+            <label class="checkbox-inline">
+                <input type="checkbox" id="inlineCheckbox3" value="option3"> Android
+            </label>
+        </div>
+    </div>
+    <div class="form-group">
+        <label for="inputEmail3" class="col-sm-3 control-label">开发公司</label>
+        <div class="col-sm-7">
+            <input type="text" class="form-control  " id="inputEmail3" placeholder="如：无锡闲时科技有限公司">
+        </div>
+    </div>
+    <div class="form-group">
+        <label for="inputEmail3" class="col-sm-3 control-label">上线时间</label>
+        <div class="col-sm-7">
+            <input type="text" class="form-control " id="sandbox-container" placeholder="如：2017年1月">
+
+        </div>
+    </div>
+    <div class="form-group">
+        <label for="inputEmail3" class="col-sm-3 control-label">项目类型</label>
+        <div class="col-sm-7">
+            <label class="radio-inline">
+                <input type="radio" name="inlineRadioOptions" id="inlineRadio1" value="option1"> 开源项目
+            </label>
+            <label class="radio-inline">
+                <input type="radio" name="inlineRadioOptions" id="inlineRadio2" value="option2"> 创业项目
+            </label>
+
+            <label class="radio-inline">
+                <input type="radio" name="inlineRadioOptions" id="inlineRadio3" value="option3"> 其它
+            </label>
+        </div>
+    </div>
+    <div class="form-group">
+        <label for="inputEmail3" class="col-sm-3 control-label">最新版本</label>
+        <div class="col-sm-7">
+            <input type="text" class="form-control  " id="inputEmail3" placeholder="如：1.3">
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label for="inputEmail3" class="col-sm-3 control-label">产品标签</label>
+        <div class="col-sm-7">
+            <div class="demo">
+                <div class="plus-tag tagbtn clearfix" id="myTags"></div>
+                <div class="plus-tag-add">
+                    <div class="input-group">
+                        <input type="text" class="form-control">
+                        <span class="input-group-btn">
+							        <button class="btn btn-default" type="button"><i class="fa fa-plus shareproduct-add-lable"></i></button>
+							      </span>
+                    </div><!-- /input-group -->
+                    <span class="help-block shareproduct-toggle-lable-span"><a class="shareproduct-toggle-lable" href="javascript:void(0);">查看已有标签</a></span><br><br>
+                </div>
+                <div id="mycard-plus" style="display:none;">
+                    <div class="default-tag tagbtn">
+                        <div class="clearfix">
+                            <volist name="labels" id="label">
+                                <a value="-1" title="{$label.label_name}" href="javascript:void(0);" attr-id="{$label.label_id}"><span>{$label.label_name}</span><em></em></a>
+                            </volist>
+                            <!--<a value="-1" title="Travel" href="javascript:void(0);"><span>Travel</span><em></em></a>
+                            <a value="-1" title="Internet" href="javascript:void(0);"><span>Internet</span><em></em></a>
+                            <a value="-1" title="it" href="javascript:void(0);"><span>it</span><em></em></a>
+                            <a value="-1" title="French" href="javascript:void(0);"><span>French</span><em></em></a>
+                            <a value="-1" title="English" href="javascript:void(0);"><span>English</span><em></em></a>
+                            <a value="-1" title="JAVA" href="javascript:void(0);"><span>JAVA</span><em></em></a>
+                            <a value="-1" title="Photograph" href="javascript:void(0);"><span>Photograph</span><em></em></a>
+                            <a value="-1" title="Sculpture" href="javascript:void(0);"><span>Sculpture</span><em></em></a>
+                            <a value="-1" title="Drawing" href="javascript:void(0);"><span>Drawing</span><em></em></a>
+                            <a value="-1" title="Jazziness" href="javascript:void(0);"><span>Jazziness</span><em></em></a>
+                            <a value="-1" title="Running" href="javascript:void(0);"><span>Running</span><em></em></a>
+                            <a value="-1" title="PHP" href="javascript:void(0);"><span>PHP</span><em></em></a>
+                            <a value="-1" title="Dreamweaver" href="javascript:void(0);"><span>Dreamweaver</span><em></em></a>
+                            <a value="-1" title="Shopping" href="javascript:void(0);"><span>Shopping</span><em></em></a>
+                            <a value="-1" title="Writing" href="javascript:void(0);"><span>Writing</span><em></em></a>
+                            <a value="-1" title="Diving" href="javascript:void(0);"><span>Diving</span><em></em></a>
+                            <a value="-1" title="Basketball" href="javascript:void(0);"><span>Basketball</span><em></em></a>
+                            <a value="-1" title="Reading" href="javascript:void(0);"><span>Reading</span><em></em></a>-->
+
+                        </div>
+                    </div><!--mycard-plus end-->
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="form-group shareproduct-form-group-details-margin">
+        <label for="inputEmail3" class="col-sm-3 control-label">详细介绍</label>
+        <div class="col-sm-7">
+            <textarea class="form-control" id="inputEmail3" placeholder=""></textarea>
+        </div>
+    </div>
+
+
+    <div class="form-group">
+        <div class="col-sm-offset-4 col-sm-8">
+            <button type="submit" class="btn btn-default ">提交产品</button>
+        </div>
+    </div>
+
+
+    </form>
+</div>
+<br><br><br>
+</div>
+<script type="text/javascript">
+    $(document).ready(function() {
+        // Generate a simple captcha
+        function randomNumber(min, max) {
+            return Math.floor(Math.random() * (max - min + 1) + min);
+        };
+        $('#captchaOperation').html([randomNumber(1, 100), '+', randomNumber(1, 200), '='].join(' '));
+
+        $('#defaultForm').formValidation({
+            message: 'This value is not valid',
+            icon: {
+                valid: 'fa fa-check',
+                invalid: 'fa fa-remove',
+                validating: 'fa  fa-refresh'
+            },
+            fields: {
+                firstName: {
+                    row: '.col-sm-4',
+                    validators: {
+                        notEmpty: {
+                            message: 'The first name is required'
+                        }
+                    }
+                },
+                lastName: {
+                    row: '.col-sm-4',
+                    validators: {
+                        notEmpty: {
+                            message: 'The last name is required'
+                        }
+                    }
+                },
+
+                username: {
+                    message: 'The username is not valid',
+                    validators: {
+                        notEmpty: {
+                            message: '用户名必须设置'
+                        },
+                        stringLength: {
+                            min: 6,
+                            max: 30,
+                            message: '用户名必须在6-30个字符之间'
+                        },
+                        regexp: {
+                            regexp: /^[a-zA-Z0-9_\.]+$/,
+                            message: 'The username can only consist of alphabetical, number, dot and underscore'
+                        }
+                    }
+                },
+                email: {
+                    validators: {
+                        notEmpty: {
+                            message: '电子邮件不能为空'
+                        },
+                        emailAddress: {
+                            message: '请输入有效的电子邮件地址'
+                        }
+                    }
+                },
+                password: {
+                    validators: {
+                        notEmpty: {
+                            message: '密码不能为空'
+                        },
+                        different: {
+                            field: 'username',
+                            message: '密码不能和用户名相同'
+                        }
+                    }
+                },
+                gender: {
+                    validators: {
+                        notEmpty: {
+                            message: '必须选择一个性别'
+                        }
+                    }
+                },
+                captcha: {
+                    validators: {
+                        callback: {
+                            message: 'Wrong answer',
+                            callback: function(value, validator, $field) {
+                                var items = $('#captchaOperation').html().split(' '), sum = parseInt(items[0]) + parseInt(items[2]);
+                                return value == sum;
+                            }
+                        }
+                    }
+                },
+                agree: {
+                    validators: {
+                        notEmpty: {
+                            message: 'You must agree with the terms and conditions'
+                        }
+                    }
+                }
+            }
+        });
+    });
+</script>
+<script>
+
+    $(function() {
+
+        $('#add-new-proudct').on('click', function( e ) {
+            Custombox.open({
+                target: '#modal',
+                effect: 'swell'
+            });
+            e.preventDefault();
+        });
+
+
+
+        $('#sandbox-container').datepicker({
+            language: "zh-CN",
+            orientation: "bottom auto",
+            todayHighlight: true
+        });
+
+
+    });
+
+
+
+
+    (function(doc, win) {
+        var docEl = doc.documentElement,
+                resizeEvt = 'orientationchange' in window ? 'orientationchange' : 'resize',
+                recalc = function() {
+                    var clientWidth = docEl.clientWidth;
+                    if (!clientWidth) return;
+                    if (clientWidth >= 640) {
+                        docEl.style.fontSize = '100px';
+                    } else {
+                        docEl.style.fontSize = 100 * (clientWidth / 640) + 'px';
+                    }
+                };
+
+        if (!doc.addEventListener) return;
+        win.addEventListener(resizeEvt, recalc, false);
+        doc.addEventListener('DOMContentLoaded', recalc, false);
+    })(document, window);
+
+    function imgChange(obj1, obj2) {
+        //获取点击的文本框
+        var file = document.getElementById("file");
+
+        //存放图片的父级元素
+        var imgContainer = document.getElementsByClassName(obj1)[0];
+        //获取的图片文件
+        var fileList = file.files;
+        //文本框的父级元素
+        var input = document.getElementsByClassName(obj2)[0];
+        var imgArr = [];
+        //遍历获取到得图片文件
+        for (var i = 0; i < fileList.length; i++) {
+            var imgUrl = window.URL.createObjectURL(file.files[i]);
+            imgArr.push(imgUrl);
+            var img = document.createElement("img");
+            img.setAttribute("src", imgArr[i]);
+            var imgAdd = document.createElement("div");
+            imgAdd.setAttribute("class", "z_addImg");
+            imgAdd.appendChild(img);
+            imgContainer.appendChild(imgAdd);
+        };
+        imgRemove();
+    };
+
+    function imgRemove() {
+        var imgList = document.getElementsByClassName("z_addImg");
+        var mask = document.getElementsByClassName("z_mask")[0];
+        var cancel = document.getElementsByClassName("z_cancel")[0];
+        var sure = document.getElementsByClassName("z_sure")[0];
+
+        for (var j = 0; j < imgList.length; j++) {
+            imgList[j].index = j;
+            imgList[j].onclick = function() {
+                var t = this;
+
+                t.style.display = "none";
+
+                /*
+                 mask.style.display = "block";
+                 cancel.onclick = function() {
+                 mask.style.display = "none";
+                 };
+                 sure.onclick = function() {
+                 mask.style.display = "none";
+                 t.style.display = "none";
+                 };
+                 */
+
+            }
+        };
+    };
+
+
+
+
+
+
+</script>
+
+<script type="text/javascript">
+
+    var FancyForm=function(){
+        return{
+            inputs:".FancyForm input, .FancyForm textarea",
+            setup:function(){
+                var a=this;
+                this.inputs=$(this.inputs);
+                a.inputs.each(function(){
+                    var c=$(this);
+                    a.checkVal(c)
+                });
+                a.inputs.on("keyup blur",function(){
+                    var c=$(this);
+                    a.checkVal(c);
+                });
+            },checkVal:function(a){
+                a.val().length>0?a.parent("li").addClass("val"):a.parent("li").removeClass("val")
+            }
+        }
+    }();
+
+
+    $(document).ready(function() {
+        FancyForm.setup();
+
+    });
+
+
+
+
+    var searchAjax=function(){};
+    var G_tocard_maxTips=30;
+
+    $(function(){(
+
+
+            function(){
+
+
+                var a=$(".plus-tag");
+
+
+                $(".plus-tag").on("click",'a',function(){
+
+
+                    var b=$(this).attr("title");
+                    var d=$(this).attr("value");
+
+                    delTips(b,d)
+                });
+
+                hasTips=function(b){
+                    var d=$("a",a),c=false;
+                    d.each(function(){
+                        if($(this).attr("title")==b){
+                            c=true;
+                            return false
+                        }
+                    });
+                    return c
+                };
+
+                isMaxTips=function(){
+                    return
+                    $("a",a).length>=G_tocard_maxTips
+                };
+
+                setTips=function(c,d){
+                    if(hasTips(c)){
+                        return false
+                    }if(isMaxTips()){
+                        alert("最多添加"+G_tocard_maxTips+"个标签！");
+                        return false
+                    }
+                    var b=d?'value="'+d+'"':"";
+                    a.append($("<a class='close-a'"+b+' title="'+c+'" href="javascript:void(0);" ><span>'+c+"</span><em class='close-em'></em></a>"));
+                    searchAjax(c,d,true);
+                    return true
+                };
+
+                delTips=function(b,c){
+                    if(!hasTips(b)){
+                        return false
+                    }
+                    $("a",a).each(function(){
+                        var d=$(this);
+                        if(d.attr("title")==b){
+                            d.remove();
+                            return false
+                        }
+                    });
+                    searchAjax(b,c,false);
+                    return true
+                };
+
+                getTips=function(){
+                    var b=[];
+                    $("a",a).each(function(){
+                        b.push($(this).attr("title"))
+                    });
+                    return b
+                };
+
+                getTipsId=function(){
+                    var b=[];
+                    $("a",a).each(function(){
+                        b.push($(this).attr("value"))
+                    });
+                    return b
+                };
+
+                getTipsIdAndTag=function(){
+                    var b=[];
+                    $("a",a).each(function(){
+                        b.push($(this).attr("value")+"##"+$(this).attr("title"))
+                    });
+                    return b
+                }
+            }
+
+    )()});
+
+
+
+
+
+
+
+    // 更新选中标签标签
+    $(function(){
+        setSelectTips();
+        $('.plus-tag').append($('.plus-tag a'));
+    });
+    var searchAjax = function(name, id, isAdd){
+        setSelectTips();
+    };
+    // 搜索
+    (function(){
+        var $b = $('.plus-tag-add button'),$i = $('.plus-tag-add input');
+        $i.keyup(function(e){
+            if(e.keyCode == 13){
+                $b.click();
+            }
+        });
+        $b.click(function(){
+            var name = $i.val().toLowerCase();
+            if(name != '') setTips(name,-1);
+            $i.val('');
+            $i.select();
+        });
+    })();
+    // 推荐标签
+    (function(){
+        var str = ['查看已有标签', '关闭已有标签']
+        $('.plus-tag-add a').click(function(){
+            var $this = $(this),
+                    $con = $('#mycard-plus');
+
+            if($this.hasClass('plus')){
+                $this.removeClass('plus').text(str[0]);
+                $con.hide();
+            }else{
+                $this.addClass('plus').text(str[1]);
+                $con.show();
+            }
+        });
+        $('.default-tag a').on('click', function(){
+            var $this = $(this),
+                    name = $this.attr('title'),
+                    id = $this.attr('value');
+            setTips(name, id);
+        });
+        // 更新高亮显示
+        setSelectTips = function(){
+            var arrName = getTips();
+            if(arrName.length){
+                $('#myTags').show();
+            }else{
+                $('#myTags').hide();
+            }
+            $('.default-tag a').removeClass('selected');
+            $.each(arrName, function(index,name){
+                $('.default-tag a').each(function(){
+                    var $this = $(this);
+                    if($this.attr('title') == name){
+                        $this.addClass('selected');
+                        return false;
+                    }
+                })
+            });
+        }
+
+    })();
+    // 更换链接
+    (function(){
+        var $b = $('#change-tips'),
+                $d = $('.default-tag div'),
+                len = $d.length,
+                t = 'nowtips';
+        $b.click(function(){
+            var i = $d.index($('.default-tag .nowtips'));
+            i = (i+1 < len) ? (i+1) : 0;
+            $d.hide().removeClass(t);
+            $d.eq(i).show().addClass(t);
+        });
+        $d.eq(0).addClass(t);
+    })();
+
+
+
+</script>
+
+<script type="text/javascript">
+    $(document).ready(function() {
+        // Generate a simple captcha
+        function randomNumber(min, max) {
+            return Math.floor(Math.random() * (max - min + 1) + min);
+        };
+        $('#captchaOperation').html([randomNumber(1, 100), '+', randomNumber(1, 200), '='].join(' '));
+
+        $('#add-product-form').formValidation({
+            message: 'This value is not valid',
+            icon: {
+                valid: 'fa fa-check',
+                invalid: 'fa fa-remove',
+                validating: 'fa  fa-refresh'
+            },
+            fields: {
+
+                product_name: {
+                    message: 'The username is not valid',
+                    validators: {
+                        notEmpty: {
+                            message: '用户名必须设置'
+                        },
+                        stringLength: {
+                            min: 6,
+                            max: 30,
+                            message: '用户名必须在6-30个字符之间'
+                        },
+                        regexp: {
+                            regexp: /^[a-zA-Z0-9_\.]+$/,
+                            message: 'The username can only consist of alphabetical, number, dot and underscore'
+                        }
+                    }
+                },
+                email: {
+                    validators: {
+                        notEmpty: {
+                            message: '电子邮件不能为空'
+                        },
+                        emailAddress: {
+                            message: '请输入有效的电子邮件地址'
+                        }
+                    }
+                },
+                password: {
+                    validators: {
+                        notEmpty: {
+                            message: '密码不能为空'
+                        },
+                        different: {
+                            field: 'username',
+                            message: '密码不能和用户名相同'
+                        }
+                    }
+                },
+                gender: {
+                    validators: {
+                        notEmpty: {
+                            message: '必须选择一个性别'
+                        }
+                    }
+                },
+                captcha: {
+                    validators: {
+                        callback: {
+                            message: 'Wrong answer',
+                            callback: function(value, validator, $field) {
+                                var items = $('#captchaOperation').html().split(' '), sum = parseInt(items[0]) + parseInt(items[2]);
+                                return value == sum;
+                            }
+                        }
+                    }
+                },
+                agree: {
+                    validators: {
+                        notEmpty: {
+                            message: 'You must agree with the terms and conditions'
+                        }
+                    }
+                }
+            }
+        });
+    });
+</script>

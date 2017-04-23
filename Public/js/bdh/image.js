@@ -6,18 +6,17 @@
  * 图片上传功能
  */
 $(function() {
+
     $('#file_upload').uploadify({
+
         'swf'      : 'Public/plugin/uploadify/uploadify.swf',
-        'uploader' : '/bdh/index.php?m=home&c=image&a=ajaxUploadImage',
+        'uploader' : '/index.php?m=home&c=image&a=ajaxUploadImage',
         'buttonText': '上传头像',
-
-
-
         'fileTypeDesc': 'Image Files',
         'fileObjName' : 'file',
 
         //允许上传的文件后缀
-        'fileTypeExts': '*.gif; *.jpg; *.png',
+        'fileTypeExts': '*.gif; *.jpg; *.png;',
 
         'onUploadSuccess' : function(file,data,response) {
             // response true ,false

@@ -61,7 +61,7 @@ class RegisterController extends Controller  {
 
         //对密码进行MD5加密
         $data['password'] = getMD5Password($data['password']);
-
+        $data['headerimg'] = 'Public/img/moren.jpg';
         //写入数据库
         try {
             $res = D('Admin')->addUser($data);
