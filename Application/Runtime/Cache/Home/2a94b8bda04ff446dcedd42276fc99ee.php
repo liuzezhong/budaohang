@@ -62,6 +62,7 @@
     <script src="Public/js/bdh/login.js"></script>
     <script src="Public/js/bdh/user.js"></script>
     <script src="Public/js/bdh/image.js"></script>
+    <script src="Public/js/bdh/common.js"></script>
 
     <script src="Public/js/holder/holder.js"></script>
 
@@ -71,6 +72,7 @@
 
 </head>
 <body>
+<script src="Public/js/bdh/common.js"></script>
 <style>
 
 
@@ -240,20 +242,20 @@
             <div class="form-group">
                 <label for="inputEmail3" class="col-sm-3 control-label form-group-label">产品名称</label>
                 <div class="col-sm-7">
-                    <input type="text" name="product_name" class="form-control  " id="inputEmail3" placeholder="如：不导航">
+                    <input type="text" name="product_name" class="form-control" placeholder="如：不导航">
                 </div>
             </div>
             <div class="form-group">
                 <label for="inputEmail3" class="col-sm-3 control-label form-group-label">产品官网</label>
                 <div class="col-sm-7">
-                    <input type="text" class="form-control  " id="inputEmail3" placeholder="以http://开头的有效网址">
+                    <input type="text" class="form-control" name="website" placeholder="以http://开头的有效网址">
                 </div>
             </div>
 
             <div class="form-group">
                 <label for="inputEmail3" class="col-sm-3 control-label form-group-label">产品描述</label>
                 <div class="col-sm-7">
-                    <input type="text" class="form-control  " id="inputEmail3" placeholder="用一句话来描述该产品的亮点">
+                    <input type="text" class="form-control" name="describes" placeholder="用一句话来描述该产品的亮点">
                 </div>
             </div>
             <div class="form-group">
@@ -271,62 +273,61 @@
     <div class="form-group">
         <label for="inputEmail3" class="col-sm-3 control-label">产品类别</label>
         <div class="col-sm-7">
-            <select class="form-control">
+            <select class="form-control" name="kind">
                 <option value="-1">请选择</option>
                 <?php if(is_array($product_types)): $i = 0; $__LIST__ = $product_types;if( count($__LIST__)==0 ) : echo "" ;else: foreach($__LIST__ as $key=>$type): $mod = ($i % 2 );++$i;?><option value="<?php echo ($type["type_id"]); ?>"><?php echo ($type["type_name"]); ?></option><?php endforeach; endif; else: echo "" ;endif; ?>
             </select>
-            <!--<input type="text" class="form-control  " id="inputEmail3" placeholder="如：工具类、社交类">-->
         </div>
     </div>
     <div class="form-group">
-        <label for="inputEmail3" class="col-sm-3 control-label">支持平台</label>
+        <label for="inputEmail3" class="col-sm-3 control-label" name="support">支持平台</label>
         <div class="col-sm-7">
             <label class="checkbox-inline">
-                <input type="checkbox" id="inlineCheckbox1" value="option1"> Windows
+                <input type="checkbox" name="windows"> Windows
             </label>
             <label class="checkbox-inline">
-                <input type="checkbox" id="inlineCheckbox2" value="option2"> Linux
+                <input type="checkbox" name="linux"> Linux
             </label>
             <label class="checkbox-inline">
-                <input type="checkbox" id="inlineCheckbox3" value="option3"> IOS
+                <input type="checkbox" name="ios"> IOS
             </label>
             <label class="checkbox-inline">
-                <input type="checkbox" id="inlineCheckbox3" value="option3"> Android
+                <input type="checkbox" name="android"> Android
             </label>
         </div>
     </div>
     <div class="form-group">
         <label for="inputEmail3" class="col-sm-3 control-label">开发公司</label>
         <div class="col-sm-7">
-            <input type="text" class="form-control  " id="inputEmail3" placeholder="如：无锡闲时科技有限公司">
+            <input type="text" class="form-control  " name="company" placeholder="如：无锡闲时科技有限公司">
         </div>
     </div>
     <div class="form-group">
         <label for="inputEmail3" class="col-sm-3 control-label">上线时间</label>
         <div class="col-sm-7">
-            <input type="text" class="form-control " id="sandbox-container" placeholder="如：2017年1月">
+            <input type="text" class="form-control " name="uptime" placeholder="如：2017年1月">
 
         </div>
     </div>
     <div class="form-group">
-        <label for="inputEmail3" class="col-sm-3 control-label">项目类型</label>
+        <label for="inputEmail3" class="col-sm-3 control-label" name="type">项目类型</label>
         <div class="col-sm-7">
             <label class="radio-inline">
-                <input type="radio" name="inlineRadioOptions" id="inlineRadio1" value="option1"> 开源项目
+                <input type="radio" name="kaiyuan" value="kaiyuan"> 开源项目
             </label>
             <label class="radio-inline">
-                <input type="radio" name="inlineRadioOptions" id="inlineRadio2" value="option2"> 创业项目
+                <input type="radio" name="chuangye" value="chuangye"> 创业项目
             </label>
 
             <label class="radio-inline">
-                <input type="radio" name="inlineRadioOptions" id="inlineRadio3" value="option3"> 其它
+                <input type="radio" name="other" value="other"> 其它
             </label>
         </div>
     </div>
     <div class="form-group">
         <label for="inputEmail3" class="col-sm-3 control-label">最新版本</label>
         <div class="col-sm-7">
-            <input type="text" class="form-control  " id="inputEmail3" placeholder="如：1.3">
+            <input type="text" class="form-control" name="version" placeholder="如：1.3">
         </div>
     </div>
 
@@ -348,25 +349,6 @@
                     <div class="default-tag tagbtn">
                         <div class="clearfix">
                             <?php if(is_array($labels)): $i = 0; $__LIST__ = $labels;if( count($__LIST__)==0 ) : echo "" ;else: foreach($__LIST__ as $key=>$label): $mod = ($i % 2 );++$i;?><a value="-1" title="<?php echo ($label["label_name"]); ?>" href="javascript:void(0);" attr-id="<?php echo ($label["label_id"]); ?>"><span><?php echo ($label["label_name"]); ?></span><em></em></a><?php endforeach; endif; else: echo "" ;endif; ?>
-                            <!--<a value="-1" title="Travel" href="javascript:void(0);"><span>Travel</span><em></em></a>
-                            <a value="-1" title="Internet" href="javascript:void(0);"><span>Internet</span><em></em></a>
-                            <a value="-1" title="it" href="javascript:void(0);"><span>it</span><em></em></a>
-                            <a value="-1" title="French" href="javascript:void(0);"><span>French</span><em></em></a>
-                            <a value="-1" title="English" href="javascript:void(0);"><span>English</span><em></em></a>
-                            <a value="-1" title="JAVA" href="javascript:void(0);"><span>JAVA</span><em></em></a>
-                            <a value="-1" title="Photograph" href="javascript:void(0);"><span>Photograph</span><em></em></a>
-                            <a value="-1" title="Sculpture" href="javascript:void(0);"><span>Sculpture</span><em></em></a>
-                            <a value="-1" title="Drawing" href="javascript:void(0);"><span>Drawing</span><em></em></a>
-                            <a value="-1" title="Jazziness" href="javascript:void(0);"><span>Jazziness</span><em></em></a>
-                            <a value="-1" title="Running" href="javascript:void(0);"><span>Running</span><em></em></a>
-                            <a value="-1" title="PHP" href="javascript:void(0);"><span>PHP</span><em></em></a>
-                            <a value="-1" title="Dreamweaver" href="javascript:void(0);"><span>Dreamweaver</span><em></em></a>
-                            <a value="-1" title="Shopping" href="javascript:void(0);"><span>Shopping</span><em></em></a>
-                            <a value="-1" title="Writing" href="javascript:void(0);"><span>Writing</span><em></em></a>
-                            <a value="-1" title="Diving" href="javascript:void(0);"><span>Diving</span><em></em></a>
-                            <a value="-1" title="Basketball" href="javascript:void(0);"><span>Basketball</span><em></em></a>
-                            <a value="-1" title="Reading" href="javascript:void(0);"><span>Reading</span><em></em></a>-->
-
                         </div>
                     </div><!--mycard-plus end-->
                 </div>
@@ -378,14 +360,14 @@
     <div class="form-group shareproduct-form-group-details-margin">
         <label for="inputEmail3" class="col-sm-3 control-label">详细介绍</label>
         <div class="col-sm-7">
-            <textarea class="form-control" id="inputEmail3" placeholder=""></textarea>
+            <textarea class="form-control" name="introduction" id="inputEmail3" placeholder=""></textarea>
         </div>
     </div>
 
 
     <div class="form-group">
         <div class="col-sm-offset-4 col-sm-8">
-            <button type="submit" class="btn btn-default ">提交产品</button>
+            <button type="button" class="btn btn-default " id="add-products">提交产品</button>
         </div>
     </div>
 
@@ -395,104 +377,11 @@
 <br><br><br>
 </div>
 <script type="text/javascript">
-    $(document).ready(function() {
-        // Generate a simple captcha
-        function randomNumber(min, max) {
-            return Math.floor(Math.random() * (max - min + 1) + min);
-        };
-        $('#captchaOperation').html([randomNumber(1, 100), '+', randomNumber(1, 200), '='].join(' '));
-
-        $('#defaultForm').formValidation({
-            message: 'This value is not valid',
-            icon: {
-                valid: 'fa fa-check',
-                invalid: 'fa fa-remove',
-                validating: 'fa  fa-refresh'
-            },
-            fields: {
-                firstName: {
-                    row: '.col-sm-4',
-                    validators: {
-                        notEmpty: {
-                            message: 'The first name is required'
-                        }
-                    }
-                },
-                lastName: {
-                    row: '.col-sm-4',
-                    validators: {
-                        notEmpty: {
-                            message: 'The last name is required'
-                        }
-                    }
-                },
-
-                username: {
-                    message: 'The username is not valid',
-                    validators: {
-                        notEmpty: {
-                            message: '用户名必须设置'
-                        },
-                        stringLength: {
-                            min: 6,
-                            max: 30,
-                            message: '用户名必须在6-30个字符之间'
-                        },
-                        regexp: {
-                            regexp: /^[a-zA-Z0-9_\.]+$/,
-                            message: 'The username can only consist of alphabetical, number, dot and underscore'
-                        }
-                    }
-                },
-                email: {
-                    validators: {
-                        notEmpty: {
-                            message: '电子邮件不能为空'
-                        },
-                        emailAddress: {
-                            message: '请输入有效的电子邮件地址'
-                        }
-                    }
-                },
-                password: {
-                    validators: {
-                        notEmpty: {
-                            message: '密码不能为空'
-                        },
-                        different: {
-                            field: 'username',
-                            message: '密码不能和用户名相同'
-                        }
-                    }
-                },
-                gender: {
-                    validators: {
-                        notEmpty: {
-                            message: '必须选择一个性别'
-                        }
-                    }
-                },
-                captcha: {
-                    validators: {
-                        callback: {
-                            message: 'Wrong answer',
-                            callback: function(value, validator, $field) {
-                                var items = $('#captchaOperation').html().split(' '), sum = parseInt(items[0]) + parseInt(items[2]);
-                                return value == sum;
-                            }
-                        }
-                    }
-                },
-                agree: {
-                    validators: {
-                        notEmpty: {
-                            message: 'You must agree with the terms and conditions'
-                        }
-                    }
-                }
-            }
-        });
+    $('#add-products').click(function () {
+        alert('1');
     });
+
+
 </script>
 <script>
 
@@ -812,88 +701,7 @@
 </script>
 
 <script type="text/javascript">
-    $(document).ready(function() {
-        // Generate a simple captcha
-        function randomNumber(min, max) {
-            return Math.floor(Math.random() * (max - min + 1) + min);
-        };
-        $('#captchaOperation').html([randomNumber(1, 100), '+', randomNumber(1, 200), '='].join(' '));
 
-        $('#add-product-form').formValidation({
-            message: 'This value is not valid',
-            icon: {
-                valid: 'fa fa-check',
-                invalid: 'fa fa-remove',
-                validating: 'fa  fa-refresh'
-            },
-            fields: {
-
-                product_name: {
-                    message: 'The username is not valid',
-                    validators: {
-                        notEmpty: {
-                            message: '用户名必须设置'
-                        },
-                        stringLength: {
-                            min: 6,
-                            max: 30,
-                            message: '用户名必须在6-30个字符之间'
-                        },
-                        regexp: {
-                            regexp: /^[a-zA-Z0-9_\.]+$/,
-                            message: 'The username can only consist of alphabetical, number, dot and underscore'
-                        }
-                    }
-                },
-                email: {
-                    validators: {
-                        notEmpty: {
-                            message: '电子邮件不能为空'
-                        },
-                        emailAddress: {
-                            message: '请输入有效的电子邮件地址'
-                        }
-                    }
-                },
-                password: {
-                    validators: {
-                        notEmpty: {
-                            message: '密码不能为空'
-                        },
-                        different: {
-                            field: 'username',
-                            message: '密码不能和用户名相同'
-                        }
-                    }
-                },
-                gender: {
-                    validators: {
-                        notEmpty: {
-                            message: '必须选择一个性别'
-                        }
-                    }
-                },
-                captcha: {
-                    validators: {
-                        callback: {
-                            message: 'Wrong answer',
-                            callback: function(value, validator, $field) {
-                                var items = $('#captchaOperation').html().split(' '), sum = parseInt(items[0]) + parseInt(items[2]);
-                                return value == sum;
-                            }
-                        }
-                    }
-                },
-                agree: {
-                    validators: {
-                        notEmpty: {
-                            message: 'You must agree with the terms and conditions'
-                        }
-                    }
-                }
-            }
-        });
-    });
 </script>
 
 
@@ -912,7 +720,7 @@
                     <li><strong><span class="budaohangfont"> 欢迎访问不导航</span></strong> &nbsp;&nbsp;不错过任何一个好产品 
                   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</li>
                     <li><input type="text" class="form-control input-sm" placeholder="发现好产品" /></li>
-                    <li><button type="submit" class="btn btn-info btn-sm">发现产品</button></li>
+                    <li><button type="button" class="btn btn-info btn-sm">发现产品</button></li>
                     <li>&nbsp;&nbsp;&nbsp;&nbsp;</li>
                   </ul>
 
