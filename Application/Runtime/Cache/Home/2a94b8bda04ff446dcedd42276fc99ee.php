@@ -273,7 +273,7 @@
     <div class="form-group">
         <label for="inputEmail3" class="col-sm-3 control-label">产品类别</label>
         <div class="col-sm-7">
-            <select class="form-control" name="kind">
+            <select class="form-control" name="kind" id="kind">
                 <option value="-1">请选择</option>
                 <?php if(is_array($product_types)): $i = 0; $__LIST__ = $product_types;if( count($__LIST__)==0 ) : echo "" ;else: foreach($__LIST__ as $key=>$type): $mod = ($i % 2 );++$i;?><option value="<?php echo ($type["type_id"]); ?>"><?php echo ($type["type_name"]); ?></option><?php endforeach; endif; else: echo "" ;endif; ?>
             </select>
@@ -378,7 +378,29 @@
 </div>
 <script type="text/javascript">
     $('#add-products').click(function () {
-        alert('1');
+        var product_name = $('input[name = "product_name"]').val();
+        var website = $('input[name = "website"]').val();
+        var describes = $('input[name = "describes"]').val();
+        var kind = $('#kind').val();
+
+        var company = $('input[name = "company"]').val();
+        var uptime = $('input[name = "uptime"]').val();
+        var version = $('input[name = "version"]').val();
+        var introduction = $('textarea[name = "introduction"]').val();
+
+        var data = {
+          'product_name' : product_name,
+            'website' : website,
+            'describes' : describes,
+            'kind' : kind,
+            'company' : company,
+            'uptime' : uptime,
+            'version' : version,
+            'introduction' : introduction,
+        };
+
+        console.log(data);
+
     });
 
 
