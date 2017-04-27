@@ -283,16 +283,16 @@
         <label for="inputEmail3" class="col-sm-3 control-label" name="support">支持平台</label>
         <div class="col-sm-7">
             <label class="checkbox-inline">
-                <input type="checkbox" name="windows"> Windows
+                <input type="checkbox" name="checkbox" value="windows"> Windows
             </label>
             <label class="checkbox-inline">
-                <input type="checkbox" name="linux"> Linux
+                <input type="checkbox" name="checkbox" value="linux"> Linux
             </label>
             <label class="checkbox-inline">
-                <input type="checkbox" name="ios"> IOS
+                <input type="checkbox" name="checkbox" value="IOS"> IOS
             </label>
             <label class="checkbox-inline">
-                <input type="checkbox" name="android"> Android
+                <input type="checkbox" name="checkbox" value="Android"> Android
             </label>
         </div>
     </div>
@@ -305,7 +305,7 @@
     <div class="form-group">
         <label for="inputEmail3" class="col-sm-3 control-label">上线时间</label>
         <div class="col-sm-7">
-            <input type="text" class="form-control " name="uptime" placeholder="如：2017年1月">
+            <input type="text" class="form-control " name="uptime" id="sandbox-container" placeholder="如：2017年1月">
 
         </div>
     </div>
@@ -313,14 +313,14 @@
         <label for="inputEmail3" class="col-sm-3 control-label" name="type">项目类型</label>
         <div class="col-sm-7">
             <label class="radio-inline">
-                <input type="radio" name="kaiyuan" value="kaiyuan"> 开源项目
+                <input type="radio" name="type" value="kaiyuan"> 开源项目
             </label>
             <label class="radio-inline">
-                <input type="radio" name="chuangye" value="chuangye"> 创业项目
+                <input type="radio" name="type" value="chuangye"> 创业项目
             </label>
 
             <label class="radio-inline">
-                <input type="radio" name="other" value="other"> 其它
+                <input type="radio" name="type" value="other"> 其它
             </label>
         </div>
     </div>
@@ -387,6 +387,16 @@
         var uptime = $('input[name = "uptime"]').val();
         var version = $('input[name = "version"]').val();
         var introduction = $('textarea[name = "introduction"]').val();
+        var type = $('input:radio:checked').val();
+        var file = $('input[type = "file"]').val();
+        var support = {};
+
+        $("input[name='checkbox']:checked").each(function  (i) {
+            support[i] = $(this).val();
+        });
+
+
+
 
         var data = {
           'product_name' : product_name,
@@ -397,9 +407,31 @@
             'uptime' : uptime,
             'version' : version,
             'introduction' : introduction,
+            'support' : support,
+            'type' : type,
+            'file' : file,
         };
 
-        console.log(data);
+        //console.log(data);
+
+
+
+        var formData = new FormData($( "#add-product-form" )[0]);
+        $.ajax({
+            url: 'http://budaohang.com/index.php?m=home&c=index&a=upload_check' ,
+            type: 'POST',
+            data: formData,
+            async: false,
+            cache: false,
+            contentType: false,
+            processData: false,
+            success: function (returndata) {
+                alert('成功');
+            },
+            error: function (returndata) {
+                alert('失败');
+            }
+        });
 
     });
 
@@ -452,11 +484,13 @@
     function imgChange(obj1, obj2) {
         //获取点击的文本框
         var file = document.getElementById("file");
-
+        console.log(file);
         //存放图片的父级元素
         var imgContainer = document.getElementsByClassName(obj1)[0];
+
         //获取的图片文件
         var fileList = file.files;
+        console.log(fileList);
         //文本框的父级元素
         var input = document.getElementsByClassName(obj2)[0];
         var imgArr = [];
@@ -464,6 +498,7 @@
         for (var i = 0; i < fileList.length; i++) {
             var imgUrl = window.URL.createObjectURL(file.files[i]);
             imgArr.push(imgUrl);
+            console.log(imgArr);
             var img = document.createElement("img");
             img.setAttribute("src", imgArr[i]);
             var imgAdd = document.createElement("div");
