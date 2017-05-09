@@ -31,10 +31,10 @@ $(document).ready(function() {
                         max: 20,
                         message: '产品名在2-20个字符之间'
                     },
-                    regexp: {
+                    /*regexp: {
                         regexp: /^[a-zA-Z0-9_\.]+$/,
                         message: '产品名称只能是字母、数字和下划线'
-                    }
+                    }*/
                 }
             },
             website: {

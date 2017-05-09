@@ -20,7 +20,5 @@ class ImageController extends CommonController {
             return show(1,'上传成功',$res);
         }
 
-
-
     }
 }

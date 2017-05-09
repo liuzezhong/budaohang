@@ -263,13 +263,13 @@
                 <div class="col-sm-7">
                     <div class="z_photo">
                         <div class="z_file">
-                        <input type="file" name="file" id="file" value="" accept="image/*" multiple onchange="imgChange('z_photo','z_file');" />
+                        <input type="file" name="file[]" id="file" value="" accept="image/*" multiple onchange="imgChange('z_photo','z_file');" />
                     </div>
                 </div>
             </div>
     </div>
             <?php
- $product_types = D('Product_type')->get_all_product_type(); $labels = D('Label')->get_all_label(); ?>
+ $product_types = D('Product_type')->get_all_product_type(); $labels = D('Label')->get_all_label(); $types = C('PRODUCT_TYPE'); ?>
     <div class="form-group">
         <label for="inputEmail3" class="col-sm-3 control-label">产品类别</label>
         <div class="col-sm-7">
@@ -283,10 +283,10 @@
         <label for="inputEmail3" class="col-sm-3 control-label" name="support">支持平台</label>
         <div class="col-sm-7">
             <label class="checkbox-inline">
-                <input type="checkbox" name="checkbox" value="windows"> Windows
+                <input type="checkbox" name="checkbox" value="Windows"> Windows
             </label>
             <label class="checkbox-inline">
-                <input type="checkbox" name="checkbox" value="linux"> Linux
+                <input type="checkbox" name="checkbox" value="Linux"> Linux
             </label>
             <label class="checkbox-inline">
                 <input type="checkbox" name="checkbox" value="IOS"> IOS
@@ -312,16 +312,9 @@
     <div class="form-group">
         <label for="inputEmail3" class="col-sm-3 control-label" name="type">项目类型</label>
         <div class="col-sm-7">
-            <label class="radio-inline">
-                <input type="radio" name="type" value="kaiyuan"> 开源项目
-            </label>
-            <label class="radio-inline">
-                <input type="radio" name="type" value="chuangye"> 创业项目
-            </label>
-
-            <label class="radio-inline">
-                <input type="radio" name="type" value="other"> 其它
-            </label>
+            <?php if(is_array($types)): $i = 0; $__LIST__ = $types;if( count($__LIST__)==0 ) : echo "" ;else: foreach($__LIST__ as $key=>$type): $mod = ($i % 2 );++$i;?><label class="radio-inline">
+                    <input type="radio" name="type" value="<?php echo ($key); ?>"> <?php echo ($type); ?>
+                </label><?php endforeach; endif; else: echo "" ;endif; ?>
         </div>
     </div>
     <div class="form-group">
@@ -335,7 +328,7 @@
         <label for="inputEmail3" class="col-sm-3 control-label">产品标签</label>
         <div class="col-sm-7">
             <div class="demo">
-                <div class="plus-tag tagbtn clearfix" id="myTags"></div>
+                <div class="plus-tag tagbtn clearfix tag-select" id="myTags"></div>
                 <div class="plus-tag-add">
                     <div class="input-group">
                         <input type="text" class="form-control">
@@ -377,6 +370,7 @@
 <br><br><br>
 </div>
 <script type="text/javascript">
+    var fileList = new Array();
     $('#add-products').click(function () {
         var product_name = $('input[name = "product_name"]').val();
         var website = $('input[name = "website"]').val();
@@ -388,56 +382,76 @@
         var version = $('input[name = "version"]').val();
         var introduction = $('textarea[name = "introduction"]').val();
         var type = $('input:radio:checked').val();
-        var file = $('input[type = "file"]').val();
-        var support = {};
-
-        $("input[name='checkbox']:checked").each(function  (i) {
-            support[i] = $(this).val();
+        var support = new Array();
+        var label = new Array();
+        $('input[name="checkbox"]:checked').each(function  (i) {
+            support.push($(this).val());
         });
 
+        $('.tag-select a').each(function (j) {
+            label.push($(this).attr('title'));
+        });
+
+        if(!product_name) {
+            return dialog.msg('产品名不能为空！');
+        }
+        if(!website) {
+            return dialog.msg('产品网址 不能为空！');
+        }
+        if(!describes) {
+            return dialog.msg('产品描述不能为空！');
+        }
+        if(fileList.length == 0) {
+            return dialog.msg('图片不能为空！');
+        }
 
 
+        var formData = new FormData();
 
-        var data = {
-          'product_name' : product_name,
-            'website' : website,
-            'describes' : describes,
-            'kind' : kind,
-            'company' : company,
-            'uptime' : uptime,
-            'version' : version,
-            'introduction' : introduction,
-            'support' : support,
-            'type' : type,
-            'file' : file,
-        };
-
-        //console.log(data);
+        formData.append('product_name',product_name);
+        formData.append('website',website);
+        formData.append('describes',describes);
+        formData.append('kind',kind);
+        formData.append('company',company);
+        formData.append('uptime',uptime);
+        formData.append('version',version);
+        formData.append('introduction',introduction);
+        formData.append('type',type);
 
 
+        for (var i = 0; i < fileList.length; i++) {
+            formData.append('file[]',fileList[i][0]);
+        }
+        for(var j = 0; j< support.length; j++) {
+            formData.append('support[]',support[j]);
+        }
+        for(var j = 0; j< label.length; j++) {
+            formData.append('label[]',label[j]);
+        }
 
-        var formData = new FormData($( "#add-product-form" )[0]);
+
         $.ajax({
-            url: 'http://budaohang.com/index.php?m=home&c=index&a=upload_check' ,
+            url: 'index.php?m=home&c=product&a=addproduct' ,
             type: 'POST',
+            dataType: 'JSON',
             data: formData,
             async: false,
             cache: false,
             contentType: false,
             processData: false,
-            success: function (returndata) {
-                alert('成功');
+            success: function (result) {
+                dialog.msg_url(result.message,'');
             },
-            error: function (returndata) {
-                alert('失败');
+            error: function (result) {
+
+                dialog.msg(result.message);
             }
         });
 
     });
 
 
-</script>
-<script>
+
 
     $(function() {
 
@@ -452,6 +466,7 @@
 
 
         $('#sandbox-container').datepicker({
+            //format: 'yyyy-mm-dd',
             language: "zh-CN",
             orientation: "bottom auto",
             todayHighlight: true
@@ -481,32 +496,24 @@
         doc.addEventListener('DOMContentLoaded', recalc, false);
     })(document, window);
 
+
     function imgChange(obj1, obj2) {
         //获取点击的文本框
         var file = document.getElementById("file");
-        console.log(file);
         //存放图片的父级元素
         var imgContainer = document.getElementsByClassName(obj1)[0];
-
         //获取的图片文件
-        var fileList = file.files;
-        console.log(fileList);
-        //文本框的父级元素
-        var input = document.getElementsByClassName(obj2)[0];
+        fileList.push(file.files);
         var imgArr = [];
-        //遍历获取到得图片文件
-        for (var i = 0; i < fileList.length; i++) {
-            var imgUrl = window.URL.createObjectURL(file.files[i]);
-            imgArr.push(imgUrl);
-            console.log(imgArr);
-            var img = document.createElement("img");
-            img.setAttribute("src", imgArr[i]);
-            var imgAdd = document.createElement("div");
-            imgAdd.setAttribute("class", "z_addImg");
-            imgAdd.appendChild(img);
-            imgContainer.appendChild(imgAdd);
-        };
-        imgRemove();
+        var imgUrl = window.URL.createObjectURL(file.files[0]);
+        imgArr.push(imgUrl);
+        var img = document.createElement("img");
+        img.setAttribute("src", imgArr[0]);
+        var imgAdd = document.createElement("div");
+        imgAdd.setAttribute("class", "z_addImg");
+        imgAdd.appendChild(img);
+        imgContainer.appendChild(imgAdd);
+
     };
 
     function imgRemove() {
@@ -542,9 +549,7 @@
 
 
 
-</script>
 
-<script type="text/javascript">
 
     var FancyForm=function(){
         return{
@@ -608,8 +613,7 @@
                 };
 
                 isMaxTips=function(){
-                    return
-                    $("a",a).length>=G_tocard_maxTips
+                    return $("a",a).length>=G_tocard_maxTips
                 };
 
                 setTips=function(c,d){
@@ -757,10 +761,6 @@
 
 </script>
 
-<script type="text/javascript">
-
-</script>
-
 
   <div class="container">
     <div class="row">
@@ -797,7 +797,7 @@
         <div class="col-md-9">
         <!-- start   可关闭的热门推荐
         ================================================-->
-          <div class="row">
+          <!--<div class="row">
             <div class="col-md-12">
               <div class="alert alert-panle-info alert-dismissible-panle alert-panle" role="alert">
                 <button type="button" class="close" data-dismiss="alert">
@@ -806,37 +806,37 @@
                 </button>
                 <p>&nbsp;&nbsp;&nbsp;&nbsp;热门产品 </p>
                 <hr class="">
-                <div class="panel-body ">   <!-- 面板内容start -->
-                  <div class="row div-pointer" onmouseover="this.style.backgroundColor='#F9F9F9'"  onmouseout="this.style.backgroundColor='white'" id="div-point" >    <!-- 面板内容整列第1行row start -->
-                    <div class="col-md-12">   <!-- 整列第一行col start-->
+                <div class="panel-body ">   &lt;!&ndash; 面板内容start &ndash;&gt;
+                  <div class="row div-pointer" onmouseover="this.style.backgroundColor='#F9F9F9'"  onmouseout="this.style.backgroundColor='white'" id="div-point" >    &lt;!&ndash; 面板内容整列第1行row start &ndash;&gt;
+                    <div class="col-md-12">   &lt;!&ndash; 整列第一行col start&ndash;&gt;
                       <div class="row">
                         <div class="col-md-12 list-content-mar">                      
                           <div class="row">
-                            <div class="col-md-2 ">   <!--第一列图片 start -->
+                            <div class="col-md-2 ">   &lt;!&ndash;第一列图片 start &ndash;&gt;
                               <img src="Public/img/list1.jpg" class="img-responsive img-padd" alt="Responsive image" style="width:100px;heigth:100px;">
-                            </div>       <!--第一列图片 end -->
-                            <div class="col-md-10 hot-content-marg">   <!-- 第二列列表信息 start-->
-                              <div class="row"> <!-- 第二列第一行基本信息 start-->
-                                <div class="col-md-10">  <!-- 标题、描述信息start-->
+                            </div>       &lt;!&ndash;第一列图片 end &ndash;&gt;
+                            <div class="col-md-10 hot-content-marg">   &lt;!&ndash; 第二列列表信息 start&ndash;&gt;
+                              <div class="row"> &lt;!&ndash; 第二列第一行基本信息 start&ndash;&gt;
+                                <div class="col-md-10">  &lt;!&ndash; 标题、描述信息start&ndash;&gt;
                                   <ul class="list-unstyled">
                                     <li><h4>Alarmy：能够叫醒你的闹钟</h4></li>
                                     <li><p class="dis-p-color"><small>三招让你起床服服帖帖。拍照模式：下床活动，到事先拍好的照片地（如客厅）拍照解锁；防抖模式：要关闭闹钟，请摇动手机；数学题模式：要关闭闹铃，先解道数学问题。</small></p></li>
                                   </ul>
-                                </div> <!-- 标题、描述信息end-->
-                                <div class="col-md-2">    <!-- 上传者头像信息 ，预留未开发 start -->
+                                </div> &lt;!&ndash; 标题、描述信息end&ndash;&gt;
+                                <div class="col-md-2">    &lt;!&ndash; 上传者头像信息 ，预留未开发 start &ndash;&gt;
                                   &nbsp;
-                                </div>  <!-- 上传者头像信息end -->
-                              </div>  <!-- 第二列第一行基本信息 end-->
-                              <div class="row">   <!-- 第二列第二行 点赞分享等按钮 start -->
-                                <div class="col-md-8">     <!-- 点赞、评论数、收藏、分享 start-->
+                                </div>  &lt;!&ndash; 上传者头像信息end &ndash;&gt;
+                              </div>  &lt;!&ndash; 第二列第一行基本信息 end&ndash;&gt;
+                              <div class="row">   &lt;!&ndash; 第二列第二行 点赞分享等按钮 start &ndash;&gt;
+                                <div class="col-md-8">     &lt;!&ndash; 点赞、评论数、收藏、分享 start&ndash;&gt;
                                   <ul class="list-unstyled list-inline">
                                     <li><a class="btn btn-defaults btn-sm-list zanclass" id="zan1001" rel="nozan"><i class="fa fa-heart fa-fw"></i>&nbsp;<span class="zannumber" id="zannumber1001" >2536</span></a></li>
                                     <li><a class="btn btn-defaults-chat btn-sm-list" id="pinglun1001"><i class="fa fa-comment fa-fw"></i>&nbsp;109</a></li>
                                     <li><a class="btn btn-defaults-chat btn-sm-list" id="shoucang1001"><i class="fa fa-plus fa-fw"></i>&nbsp;收藏</a></li>
                                     <li><a class="btn btn-defaults-chat btn-sm-list" href="http://www.sina.com" id="fenxiang1001"><i class="fa fa-send-o fa-fw"></i>&nbsp;分享</a></li>
                                   </ul>
-                                </div>   <!-- 点赞、评论数、收藏、分享 end-->
-                                <div class="col-md-4" id="spans">    <!-- 标签列表 start -->
+                                </div>   &lt;!&ndash; 点赞、评论数、收藏、分享 end&ndash;&gt;
+                                <div class="col-md-4" id="spans">    &lt;!&ndash; 标签列表 start &ndash;&gt;
                                   <ul class="list-unstyled list-inline text-right">
                                     <li>
                                       <a class="" href="#"><span class="label label-default">前端框架</span></a>&nbsp;<a  href="javascript:;" id="pop22"  class="a-font" rel="popover" 
@@ -849,46 +849,46 @@
                                       </a>
                                     </li>                                  
                                   </ul>
-                                </div>  <!-- 标签列表 end -->
-                              </div>   <!-- 第二列第二行 点赞分享等按钮 end -->
-                            </div>  <!-- 第二列列表信息 end-->                                        
+                                </div>  &lt;!&ndash; 标签列表 end &ndash;&gt;
+                              </div>   &lt;!&ndash; 第二列第二行 点赞分享等按钮 end &ndash;&gt;
+                            </div>  &lt;!&ndash; 第二列列表信息 end&ndash;&gt;
                           </div>
                         </div>
                       </div> 
                       <hr class="hr-list-content">
-                    </div>  <!-- 整列第一行col end-->
-                  </div> <!-- 面板内容整列第1行row end -->
+                    </div>  &lt;!&ndash; 整列第一行col end&ndash;&gt;
+                  </div> &lt;!&ndash; 面板内容整列第1行row end &ndash;&gt;
 
-                  <div class="row" onmouseover="this.style.backgroundColor='#F9F9F9'"  onmouseout="this.style.backgroundColor='white'">    <!-- 面板内容整列第2行row start -->
-                    <div class="col-md-12">   <!-- 整列第一行col start-->
+                  <div class="row" onmouseover="this.style.backgroundColor='#F9F9F9'"  onmouseout="this.style.backgroundColor='white'">    &lt;!&ndash; 面板内容整列第2行row start &ndash;&gt;
+                    <div class="col-md-12">   &lt;!&ndash; 整列第一行col start&ndash;&gt;
                       <div class="row">
                         <div class="col-md-12 list-content-mar">                      
                           <div class="row">
-                            <div class="col-md-2">   <!--第一列图片 start -->
+                            <div class="col-md-2">   &lt;!&ndash;第一列图片 start &ndash;&gt;
                               <img src="Public/img/list2.jpg" class="img-responsive img-padd" alt="Responsive image" style="width:100px;heigth:100px;">
-                            </div>       <!--第一列图片 end -->
-                            <div class="col-md-10 hot-content-marg">   <!-- 第二列列表信息 start-->
-                              <div class="row"> <!-- 第二列第一行基本信息 start-->
-                                <div class="col-md-10">  <!-- 标题、描述信息start-->
+                            </div>       &lt;!&ndash;第一列图片 end &ndash;&gt;
+                            <div class="col-md-10 hot-content-marg">   &lt;!&ndash; 第二列列表信息 start&ndash;&gt;
+                              <div class="row"> &lt;!&ndash; 第二列第一行基本信息 start&ndash;&gt;
+                                <div class="col-md-10">  &lt;!&ndash; 标题、描述信息start&ndash;&gt;
                                   <ul class="list-unstyled">
                                     <li><h4>天启学堂：早幼教机构移动办公平台</h4></li>
                                     <li><p class="dis-p-color"><small>早教机构教务管理系统，3 秒排课，一键签到，孩子的作品家长一目了然。早教机构教务管理系统，3 秒排课，一键签到，孩子的作品家长一目了然。</small></p></li>
                                   </ul>
-                                </div> <!-- 标题、描述信息end-->
-                                <div class="col-md-2">    <!-- 上传者头像信息 ，预留未开发 start -->
+                                </div> &lt;!&ndash; 标题、描述信息end&ndash;&gt;
+                                <div class="col-md-2">    &lt;!&ndash; 上传者头像信息 ，预留未开发 start &ndash;&gt;
                                   &nbsp;
-                                </div>  <!-- 上传者头像信息end -->
-                              </div>  <!-- 第二列第一行基本信息 end-->
-                              <div class="row">   <!-- 第二列第二行 点赞分享等按钮 start -->
-                                <div class="col-md-8">     <!-- 点赞、评论数、收藏、分享 start-->
+                                </div>  &lt;!&ndash; 上传者头像信息end &ndash;&gt;
+                              </div>  &lt;!&ndash; 第二列第一行基本信息 end&ndash;&gt;
+                              <div class="row">   &lt;!&ndash; 第二列第二行 点赞分享等按钮 start &ndash;&gt;
+                                <div class="col-md-8">     &lt;!&ndash; 点赞、评论数、收藏、分享 start&ndash;&gt;
                                   <ul class="list-unstyled list-inline ">
                                     <li><a class="btn btn-defaults  btn-defaults-red btn-sm-list zanclass" id="zan1002" rel="zan"><i class="fa fa-heart fa-fw"></i>&nbsp;<span class="zannumber" id="zannumber1002" >536</span></a></li>
                                     <li><a class="btn btn-defaults-chat btn-sm-list"><i class="fa fa-comment fa-fw"></i>&nbsp;109</a></li>
                                     <li><a class="btn btn-defaults-chat btn-sm-list"><i class="fa fa-plus fa-fw"></i>&nbsp;收藏</a></li>
                                     <li><a class="btn btn-defaults-chat btn-sm-list"><i class="fa fa-send-o fa-fw"></i>&nbsp;分享</a></li>
                                   </ul>
-                                </div>   <!-- 点赞、评论数、收藏、分享 end-->
-                                <div class="col-md-4" id="spans">    <!-- 标签列表 start -->
+                                </div>   &lt;!&ndash; 点赞、评论数、收藏、分享 end&ndash;&gt;
+                                <div class="col-md-4" id="spans">    &lt;!&ndash; 标签列表 start &ndash;&gt;
                                   <ul class="list-unstyled list-inline text-right">
                                     <li>
                                       <a class="" href="#"><span class="label label-default">前端框架</span></a>&nbsp;<a  href="javascript:;" id="pop1"  class="a-font" rel="popover" 
@@ -906,46 +906,46 @@
                                       </a>
                                     </li>                                  
                                   </ul>
-                                </div>  <!-- 标签列表 end -->
-                              </div>   <!-- 第二列第二行 点赞分享等按钮 end -->
-                            </div>  <!-- 第二列列表信息 end-->                                        
+                                </div>  &lt;!&ndash; 标签列表 end &ndash;&gt;
+                              </div>   &lt;!&ndash; 第二列第二行 点赞分享等按钮 end &ndash;&gt;
+                            </div>  &lt;!&ndash; 第二列列表信息 end&ndash;&gt;
                           </div>
                         </div>
                       </div> 
                       <hr class="hr-list-content">
-                    </div>  <!-- 整列第一行col end-->
-                  </div> <!-- 面板内容整列第一行row end -->
+                    </div>  &lt;!&ndash; 整列第一行col end&ndash;&gt;
+                  </div> &lt;!&ndash; 面板内容整列第一行row end &ndash;&gt;
                    
-                  <div class="row" onmouseover="this.style.backgroundColor='#F9F9F9'"  onmouseout="this.style.backgroundColor='white'">    <!-- 面板内容整列第2行row start -->
-                    <div class="col-md-12" >   <!-- 整列第一行col start-->
+                  <div class="row" onmouseover="this.style.backgroundColor='#F9F9F9'"  onmouseout="this.style.backgroundColor='white'">    &lt;!&ndash; 面板内容整列第2行row start &ndash;&gt;
+                    <div class="col-md-12" >   &lt;!&ndash; 整列第一行col start&ndash;&gt;
                       <div class="row">
                         <div class="col-md-12 list-content-mar">                      
                           <div class="row">
-                            <div class="col-md-2 ">   <!--第一列图片 start -->
+                            <div class="col-md-2 ">   &lt;!&ndash;第一列图片 start &ndash;&gt;
                               <img src="Public/img/list3.png" class="img-responsive img-padd" alt="Responsive image" style="width:100px;heigth:100px;">
-                            </div>       <!--第一列图片 end -->
-                            <div class="col-md-10 hot-content-marg">   <!-- 第二列列表信息 start-->
-                              <div class="row"> <!-- 第二列第一行基本信息 start-->
-                                <div class="col-md-10">  <!-- 标题、描述信息start-->
+                            </div>       &lt;!&ndash;第一列图片 end &ndash;&gt;
+                            <div class="col-md-10 hot-content-marg">   &lt;!&ndash; 第二列列表信息 start&ndash;&gt;
+                              <div class="row"> &lt;!&ndash; 第二列第一行基本信息 start&ndash;&gt;
+                                <div class="col-md-10">  &lt;!&ndash; 标题、描述信息start&ndash;&gt;
                                   <ul class="list-unstyled">
                                     <li><h4>Knotes：高效、优雅的 Kindle 标注管理器</h4></li>
                                     <li><p class="dis-p-color"><small>Mac平台高效、优雅的Kindle标注管理器，连接即可同步，按作者管理书籍，快速搜索书名，无干扰阅读标注。</small></p></li>
                                   </ul>
-                                </div> <!-- 标题、描述信息end-->
-                                <div class="col-md-2">    <!-- 上传者头像信息 ，预留未开发 start -->
+                                </div> &lt;!&ndash; 标题、描述信息end&ndash;&gt;
+                                <div class="col-md-2">    &lt;!&ndash; 上传者头像信息 ，预留未开发 start &ndash;&gt;
                                   &nbsp;
-                                </div>  <!-- 上传者头像信息end -->
-                              </div>  <!-- 第二列第一行基本信息 end-->
-                              <div class="row">   <!-- 第二列第二行 点赞分享等按钮 start -->
-                                <div class="col-md-8">     <!-- 点赞、评论数、收藏、分享 start-->
+                                </div>  &lt;!&ndash; 上传者头像信息end &ndash;&gt;
+                              </div>  &lt;!&ndash; 第二列第一行基本信息 end&ndash;&gt;
+                              <div class="row">   &lt;!&ndash; 第二列第二行 点赞分享等按钮 start &ndash;&gt;
+                                <div class="col-md-8">     &lt;!&ndash; 点赞、评论数、收藏、分享 start&ndash;&gt;
                                   <ul class="list-unstyled list-inline ">
                                      <li><a class="btn btn-defaults  btn-defaults-red btn-sm-list zanclass" id="zan1003" rel="zan"><i class="fa fa-heart fa-fw"></i>&nbsp;<span class="zannumber" id="zannumber1003" >36</span></a></li>
                                     <li><a class="btn btn-defaults-chat btn-sm-list"><i class="fa fa-comment fa-fw"></i>&nbsp;109</a></li>
                                     <li><a class="btn btn-defaults-chat btn-sm-list"><i class="fa fa-plus fa-fw"></i>&nbsp;收藏</a></li>
                                     <li><a class="btn btn-defaults-chat btn-sm-list"><i class="fa fa-send-o fa-fw"></i>&nbsp;分享</a></li>
                                   </ul>
-                                </div>   <!-- 点赞、评论数、收藏、分享 end-->
-                                <div class="col-md-4" id="spans">    <!-- 标签列表 start -->
+                                </div>   &lt;!&ndash; 点赞、评论数、收藏、分享 end&ndash;&gt;
+                                <div class="col-md-4" id="spans">    &lt;!&ndash; 标签列表 start &ndash;&gt;
                                   <ul class="list-unstyled list-inline text-right">
                                     <li>
                                       <a class="" href="#"><span class="label label-default">前端框架</span></a>&nbsp;<a  href="javascript:;" id="pop2"  class="a-font" rel="popover" 
@@ -963,46 +963,46 @@
                                       </a>
                                     </li>                                  
                                   </ul>
-                                </div>  <!-- 标签列表 end -->
-                              </div>   <!-- 第二列第二行 点赞分享等按钮 end -->
-                            </div>  <!-- 第二列列表信息 end-->                                        
+                                </div>  &lt;!&ndash; 标签列表 end &ndash;&gt;
+                              </div>   &lt;!&ndash; 第二列第二行 点赞分享等按钮 end &ndash;&gt;
+                            </div>  &lt;!&ndash; 第二列列表信息 end&ndash;&gt;
                           </div>
                         </div>
                       </div> 
                       <hr class="hr-list-content">
-                    </div>  <!-- 整列第一行col end-->
-                  </div> <!-- 面板内容整列第一行row end -->
+                    </div>  &lt;!&ndash; 整列第一行col end&ndash;&gt;
+                  </div> &lt;!&ndash; 面板内容整列第一行row end &ndash;&gt;
                     
-                  <div class="row " onmouseover="this.style.backgroundColor='#F9F9F9'"  onmouseout="this.style.backgroundColor='white'">    <!-- 面板内容整列第3行row start -->
-                    <div class="col-md-12">   <!-- 整列第一行col start-->
+                  <div class="row " onmouseover="this.style.backgroundColor='#F9F9F9'"  onmouseout="this.style.backgroundColor='white'">    &lt;!&ndash; 面板内容整列第3行row start &ndash;&gt;
+                    <div class="col-md-12">   &lt;!&ndash; 整列第一行col start&ndash;&gt;
                       <div class="row">
                         <div class="col-md-12 list-content-mar">                      
                           <div class="row">
-                            <div class="col-md-2 ">   <!--第一列图片 start -->
+                            <div class="col-md-2 ">   &lt;!&ndash;第一列图片 start &ndash;&gt;
                               <img src="Public/img/list4.png" class="img-responsive img-padd" alt="Responsive image" style="width:100px;heigth:100px;">
-                            </div>       <!--第一列图片 end -->
-                            <div class="col-md-10 hot-content-marg">   <!-- 第二列列表信息 start-->
-                              <div class="row"> <!-- 第二列第一行基本信息 start-->
-                                <div class="col-md-10">  <!-- 标题、描述信息start-->
+                            </div>       &lt;!&ndash;第一列图片 end &ndash;&gt;
+                            <div class="col-md-10 hot-content-marg">   &lt;!&ndash; 第二列列表信息 start&ndash;&gt;
+                              <div class="row"> &lt;!&ndash; 第二列第一行基本信息 start&ndash;&gt;
+                                <div class="col-md-10">  &lt;!&ndash; 标题、描述信息start&ndash;&gt;
                                   <ul class="list-unstyled">
                                     <li><h4>undunion：移动出行技术服务</h4></li>
                                     <li><p class="dis-p-color"><small>以技术创新满足个人或出行企业需求为主线，基于自身开发的一套企业版后台管理系统，为企业提供了完整规范的出行管理解决方案。</small></p></li>
                                   </ul>
-                                </div> <!-- 标题、描述信息end-->
-                                <div class="col-md-2">    <!-- 上传者头像信息 ，预留未开发 start -->
+                                </div> &lt;!&ndash; 标题、描述信息end&ndash;&gt;
+                                <div class="col-md-2">    &lt;!&ndash; 上传者头像信息 ，预留未开发 start &ndash;&gt;
                                   &nbsp;
-                                </div>  <!-- 上传者头像信息end -->
-                              </div>  <!-- 第二列第一行基本信息 end-->
-                              <div class="row">   <!-- 第二列第二行 点赞分享等按钮 start -->
-                                <div class="col-md-8">     <!-- 点赞、评论数、收藏、分享 start-->
+                                </div>  &lt;!&ndash; 上传者头像信息end &ndash;&gt;
+                              </div>  &lt;!&ndash; 第二列第一行基本信息 end&ndash;&gt;
+                              <div class="row">   &lt;!&ndash; 第二列第二行 点赞分享等按钮 start &ndash;&gt;
+                                <div class="col-md-8">     &lt;!&ndash; 点赞、评论数、收藏、分享 start&ndash;&gt;
                                   <ul class="list-unstyled list-inline ">
                                      <li><a class="btn btn-defaults btn-sm-list zanclass" id="zan1004" rel="nozan"><i class="fa fa-heart fa-fw"></i>&nbsp;<span class="zannumber" id="zannumber1004" >136</span></a></li>
                                     <li><a class="btn btn-defaults-chat btn-sm-list"><i class="fa fa-comment fa-fw"></i>&nbsp;109</a></li>
                                     <li><a class="btn btn-defaults-chat btn-sm-list"><i class="fa fa-plus fa-fw"></i>&nbsp;收藏</a></li>
                                     <li><a class="btn btn-defaults-chat btn-sm-list"><i class="fa fa-send-o fa-fw"></i>&nbsp;分享</a></li>
                                   </ul>
-                                </div>   <!-- 点赞、评论数、收藏、分享 end-->
-                                <div class="col-md-4" id="spans">    <!-- 标签列表 start -->
+                                </div>   &lt;!&ndash; 点赞、评论数、收藏、分享 end&ndash;&gt;
+                                <div class="col-md-4" id="spans">    &lt;!&ndash; 标签列表 start &ndash;&gt;
                                   <ul class="list-unstyled list-inline text-right">
                                     <li>
                                       <a class="" href="#"><span class="label label-default">前端框架</span></a>&nbsp;<a  href="javascript:;" id="pop3"  class="a-font" rel="popover" 
@@ -1020,46 +1020,46 @@
                                       </a>
                                     </li>                                  
                                   </ul>
-                                </div>  <!-- 标签列表 end -->
-                              </div>   <!-- 第二列第二行 点赞分享等按钮 end -->
-                            </div>  <!-- 第二列列表信息 end-->                                        
+                                </div>  &lt;!&ndash; 标签列表 end &ndash;&gt;
+                              </div>   &lt;!&ndash; 第二列第二行 点赞分享等按钮 end &ndash;&gt;
+                            </div>  &lt;!&ndash; 第二列列表信息 end&ndash;&gt;
                           </div>
                         </div>
                       </div> 
                       <hr class="hr-list-content">
-                    </div>  <!-- 整列第一行col end-->
-                  </div> <!-- 面板内容整列第3行row end -->
+                    </div>  &lt;!&ndash; 整列第一行col end&ndash;&gt;
+                  </div> &lt;!&ndash; 面板内容整列第3行row end &ndash;&gt;
 
-                  <div class="row" onmouseover="this.style.backgroundColor='#F9F9F9'"  onmouseout="this.style.backgroundColor='white'">    <!-- 面板内容整列第4行row start -->
-                    <div class="col-md-12">   <!-- 整列第一行col start-->
+                  <div class="row" onmouseover="this.style.backgroundColor='#F9F9F9'"  onmouseout="this.style.backgroundColor='white'">    &lt;!&ndash; 面板内容整列第4行row start &ndash;&gt;
+                    <div class="col-md-12">   &lt;!&ndash; 整列第一行col start&ndash;&gt;
                       <div class="row">
                         <div class="col-md-12 list-content-mar">                      
                           <div class="row">
-                            <div class="col-md-2 ">   <!--第一列图片 start -->
+                            <div class="col-md-2 ">   &lt;!&ndash;第一列图片 start &ndash;&gt;
                               <img src="Public/img/list5.jpg" class="img-responsive img-padd" alt="Responsive image" style="width:100px;heigth:100px;">
-                            </div>       <!--第一列图片 end -->
-                            <div class="col-md-10 hot-content-marg">   <!-- 第二列列表信息 start-->
-                              <div class="row"> <!-- 第二列第一行基本信息 start-->
-                                <div class="col-md-10">  <!-- 标题、描述信息start-->
+                            </div>       &lt;!&ndash;第一列图片 end &ndash;&gt;
+                            <div class="col-md-10 hot-content-marg">   &lt;!&ndash; 第二列列表信息 start&ndash;&gt;
+                              <div class="row"> &lt;!&ndash; 第二列第一行基本信息 start&ndash;&gt;
+                                <div class="col-md-10">  &lt;!&ndash; 标题、描述信息start&ndash;&gt;
                                   <ul class="list-unstyled">
                                     <li><h4>捷税宝：免费税务筹划咨询和落地执行 </h4></li>
                                     <li><p class="dis-p-color"><small>通过大数据以及智能匹配等技术，帮助企业主精准对接财务专家的互联网项目，目前主要为中小微企业提供服务。</small></p></li>
                                   </ul>
-                                </div> <!-- 标题、描述信息end-->
-                                <div class="col-md-2">    <!-- 上传者头像信息 ，预留未开发 start -->
+                                </div> &lt;!&ndash; 标题、描述信息end&ndash;&gt;
+                                <div class="col-md-2">    &lt;!&ndash; 上传者头像信息 ，预留未开发 start &ndash;&gt;
                                   &nbsp;
-                                </div>  <!-- 上传者头像信息end -->
-                              </div>  <!-- 第二列第一行基本信息 end-->
-                              <div class="row">   <!-- 第二列第二行 点赞分享等按钮 start -->
-                                <div class="col-md-8">     <!-- 点赞、评论数、收藏、分享 start-->
+                                </div>  &lt;!&ndash; 上传者头像信息end &ndash;&gt;
+                              </div>  &lt;!&ndash; 第二列第一行基本信息 end&ndash;&gt;
+                              <div class="row">   &lt;!&ndash; 第二列第二行 点赞分享等按钮 start &ndash;&gt;
+                                <div class="col-md-8">     &lt;!&ndash; 点赞、评论数、收藏、分享 start&ndash;&gt;
                                   <ul class="list-unstyled list-inline ">
                                      <li><a class="btn btn-defaults btn-sm-list zanclass" id="zan1005" rel="nozan"><i class="fa fa-heart fa-fw"></i>&nbsp;<span class="zannumber" id="zannumber1005" >26</span></a></li>
                                     <li><a class="btn btn-defaults-chat btn-sm-list"><i class="fa fa-comment fa-fw"></i>&nbsp;109</a></li>
                                     <li><a class="btn btn-defaults-chat btn-sm-list"><i class="fa fa-plus fa-fw"></i>&nbsp;收藏</a></li>
                                     <li><a class="btn btn-defaults-chat btn-sm-list"><i class="fa fa-send-o fa-fw"></i>&nbsp;分享</a></li>
                                   </ul>
-                                </div>   <!-- 点赞、评论数、收藏、分享 end-->
-                                <div class="col-md-4" id="spans">    <!-- 标签列表 start -->
+                                </div>   &lt;!&ndash; 点赞、评论数、收藏、分享 end&ndash;&gt;
+                                <div class="col-md-4" id="spans">    &lt;!&ndash; 标签列表 start &ndash;&gt;
                                   <ul class="list-unstyled list-inline text-right">
                                     <li>
                                       <a class="" href="#"><span class="label label-default">前端框架</span></a>&nbsp;<a  href="javascript:;" id="pop4"  class="a-font" rel="popover" 
@@ -1077,46 +1077,46 @@
                                       </a>
                                     </li>                                  
                                   </ul>
-                                </div>  <!-- 标签列表 end -->
-                              </div>   <!-- 第二列第二行 点赞分享等按钮 end -->
-                            </div>  <!-- 第二列列表信息 end-->                                        
+                                </div>  &lt;!&ndash; 标签列表 end &ndash;&gt;
+                              </div>   &lt;!&ndash; 第二列第二行 点赞分享等按钮 end &ndash;&gt;
+                            </div>  &lt;!&ndash; 第二列列表信息 end&ndash;&gt;
                           </div>
                         </div>
                       </div> 
                       <hr class="hr-list-content">
-                    </div>  <!-- 整列第一行col end-->
-                  </div> <!-- 面板内容整列第4行row end -->
+                    </div>  &lt;!&ndash; 整列第一行col end&ndash;&gt;
+                  </div> &lt;!&ndash; 面板内容整列第4行row end &ndash;&gt;
 
-                  <div class="row" onmouseover="this.style.backgroundColor='#F9F9F9'"  onmouseout="this.style.backgroundColor='white'">    <!-- 面板内容整列第5行row start -->
-                    <div class="col-md-12">   <!-- 整列第一行col start-->
+                  <div class="row" onmouseover="this.style.backgroundColor='#F9F9F9'"  onmouseout="this.style.backgroundColor='white'">    &lt;!&ndash; 面板内容整列第5行row start &ndash;&gt;
+                    <div class="col-md-12">   &lt;!&ndash; 整列第一行col start&ndash;&gt;
                       <div class="row">
                         <div class="col-md-12 list-content-mar">                      
                           <div class="row">
-                            <div class="col-md-2 ">   <!--第一列图片 start -->
+                            <div class="col-md-2 ">   &lt;!&ndash;第一列图片 start &ndash;&gt;
                               <img src="Public/img/list6.jpg" class="img-responsive img-padd" alt="Responsive image" style="width:100px;heigth:100px;">
-                            </div>       <!--第一列图片 end -->
-                            <div class="col-md-10 hot-content-marg">   <!-- 第二列列表信息 start-->
-                              <div class="row"> <!-- 第二列第一行基本信息 start-->
-                                <div class="col-md-10">  <!-- 标题、描述信息start-->
+                            </div>       &lt;!&ndash;第一列图片 end &ndash;&gt;
+                            <div class="col-md-10 hot-content-marg">   &lt;!&ndash; 第二列列表信息 start&ndash;&gt;
+                              <div class="row"> &lt;!&ndash; 第二列第一行基本信息 start&ndash;&gt;
+                                <div class="col-md-10">  &lt;!&ndash; 标题、描述信息start&ndash;&gt;
                                   <ul class="list-unstyled">
                                     <li><h4>颜面：独家定制创意风格画像</h4></li>
                                     <li><p class="dis-p-color"><small>国内垂直的画像定制服务平台，让用户可以寻找各种风格类型的画师，独家定制自己创意画像的平台。国内垂直的画像定制服务平台，让用户可以寻找各种风格类型的画师，独家定制自己创意画像的平台。</small></p></li>
                                   </ul>
-                                </div> <!-- 标题、描述信息end-->
-                                <div class="col-md-2">    <!-- 上传者头像信息 ，预留未开发 start -->
+                                </div> &lt;!&ndash; 标题、描述信息end&ndash;&gt;
+                                <div class="col-md-2">    &lt;!&ndash; 上传者头像信息 ，预留未开发 start &ndash;&gt;
                                   &nbsp;
-                                </div>  <!-- 上传者头像信息end -->
-                              </div>  <!-- 第二列第一行基本信息 end-->
-                              <div class="row">   <!-- 第二列第二行 点赞分享等按钮 start -->
-                                <div class="col-md-8">     <!-- 点赞、评论数、收藏、分享 start-->
+                                </div>  &lt;!&ndash; 上传者头像信息end &ndash;&gt;
+                              </div>  &lt;!&ndash; 第二列第一行基本信息 end&ndash;&gt;
+                              <div class="row">   &lt;!&ndash; 第二列第二行 点赞分享等按钮 start &ndash;&gt;
+                                <div class="col-md-8">     &lt;!&ndash; 点赞、评论数、收藏、分享 start&ndash;&gt;
                                   <ul class="list-unstyled list-inline ">
                                      <li><a class="btn btn-defaults  btn-defaults-red btn-sm-list zanclass" id="zan1006" rel="zan"><i class="fa fa-heart fa-fw"></i>&nbsp;<span class="zannumber" id="zannumber1006" >6</span></a></li>
                                     <li><a class="btn btn-defaults-chat btn-sm-list"><i class="fa fa-comment fa-fw"></i>&nbsp;109</a></li>
                                     <li><a class="btn btn-defaults-chat btn-sm-list"><i class="fa fa-plus fa-fw"></i>&nbsp;收藏</a></li>
                                     <li><a class="btn btn-defaults-chat btn-sm-list"><i class="fa fa-send-o fa-fw"></i>&nbsp;分享</a></li>
                                   </ul>
-                                </div>   <!-- 点赞、评论数、收藏、分享 end-->
-                                <div class="col-md-4" id="spans">    <!-- 标签列表 start -->
+                                </div>   &lt;!&ndash; 点赞、评论数、收藏、分享 end&ndash;&gt;
+                                <div class="col-md-4" id="spans">    &lt;!&ndash; 标签列表 start &ndash;&gt;
                                   <ul class="list-unstyled list-inline text-right">
                                     <li>
                                       <a class="" href="#"><span class="label label-default">前端框架</span></a>&nbsp;<a  href="javascript:;" id="pop5"  class="a-font" rel="popover" 
@@ -1134,15 +1134,15 @@
                                       </a>
                                     </li>                                  
                                   </ul>
-                                </div>  <!-- 标签列表 end -->
-                              </div>   <!-- 第二列第二行 点赞分享等按钮 end -->
-                            </div>  <!-- 第二列列表信息 end-->                                        
+                                </div>  &lt;!&ndash; 标签列表 end &ndash;&gt;
+                              </div>   &lt;!&ndash; 第二列第二行 点赞分享等按钮 end &ndash;&gt;
+                            </div>  &lt;!&ndash; 第二列列表信息 end&ndash;&gt;
                           </div>
                         </div>
                       </div> 
                       
-                    </div>  <!-- 整列第一行col end-->
-                  </div> <!-- 面板内容整列第5 row end -->
+                    </div>  &lt;!&ndash; 整列第一行col end&ndash;&gt;
+                  </div> &lt;!&ndash; 面板内容整列第5 row end &ndash;&gt;
                   
                   <div class="row seemoreabout">
                     <div class="col-md-12">
@@ -1151,10 +1151,10 @@
                       </ul>
                     </div>
                   </div>  
-               </div>  <!-- 面板内容end -->
+               </div>  &lt;!&ndash; 面板内容end &ndash;&gt;
               </div>
             </div>
-          </div>
+          </div>-->
 
           <!--  end
           =========================================-->
@@ -1180,6 +1180,57 @@
                   
                 </div>
                 <div class="panel-body ">   <!-- 面板内容start -->
+                  <?php if(is_array($products)): $i = 0; $__LIST__ = $products;if( count($__LIST__)==0 ) : echo "" ;else: foreach($__LIST__ as $key=>$product): $mod = ($i % 2 );++$i;?><div class="row" onmouseover="this.style.backgroundColor='#F9F9F9'"  onmouseout="this.style.backgroundColor='white'">    <!-- 面板内容整列第1行row start -->
+                      <div class="col-md-12">   <!-- 整列第一行col start-->
+                        <div class="row">
+                          <div class="col-md-12 list-content-mar">
+                            <div class="row">
+                              <div class="col-md-2 ">   <!--第一列图片 start -->
+                                <img src="<?php echo ($product["image"]); ?>" class="img-responsive img-padd" alt="Responsive image" style="width:100px;heigth:100px;">
+                              </div>       <!--第一列图片 end -->
+                              <div class="col-md-10">   <!-- 第二列列表信息 start-->
+                                <div class="row"> <!-- 第二列第一行基本信息 start-->
+                                  <div class="col-md-10">  <!-- 标题、描述信息start-->
+                                    <ul class="list-unstyled">
+                                      <li><h4><?php echo ($product["name"]); ?>：<?php echo ($product["describes"]); ?></h4></li>
+                                      <li><p class="dis-p-color"><small><?php echo ($product["introduction"]); ?></small></p></li>
+                                    </ul>
+                                  </div> <!-- 标题、描述信息end-->
+                                  <div class="col-md-2">    <!-- 上传者头像信息 ，预留未开发 start -->
+                                    &nbsp;
+                                  </div>  <!-- 上传者头像信息end -->
+                                </div>  <!-- 第二列第一行基本信息 end-->
+                                <div class="row">   <!-- 第二列第二行 点赞分享等按钮 start -->
+                                  <div class="col-md-8">     <!-- 点赞、评论数、收藏、分享 start-->
+                                    <ul class="list-unstyled list-inline ">
+                                      <li><a class="btn btn-defaults-red btn-sm-list"><i class="fa fa-heart fa-fw"></i>&nbsp;536</a></li>
+                                      <li><a class="btn btn-defaults-chat btn-sm-list"><i class="fa fa-comment fa-fw"></i>&nbsp;109</a></li>
+                                      <li><a class="btn btn-defaults-chat btn-sm-list"><i class="fa fa-plus fa-fw"></i>&nbsp;收藏</a></li>
+                                      <li><a class="btn btn-defaults-chat btn-sm-list"><i class="fa fa-send-o fa-fw"></i>&nbsp;分享</a></li>
+                                    </ul>
+                                  </div>   <!-- 点赞、评论数、收藏、分享 end-->
+                                  <div class="col-md-4" id="spans">    <!-- 标签列表 start -->
+                                    <ul class="list-unstyled list-inline text-right">
+                                      <li>
+                                        <a class="" href="#"><span class="label label-default"><?php echo ($product["firstlabel"]); ?></span></a>&nbsp;<a  href="javascript:;" id="pop22"  class="a-font" rel="popover"
+                                                                                                                        data-content="
+                                          <ul class='list-unstyled'>
+                                          <?php if(is_array($product["labels"])): $i = 0; $__LIST__ = $product["labels"];if( count($__LIST__)==0 ) : echo "" ;else: foreach($__LIST__ as $key=>$label): $mod = ($i % 2 );++$i;?><li class='label-default-popover'><a class='' href='#'><span class='label label-default label-defaults-popover'><?php echo ($label["label_name"]); ?></span></a></li><?php endforeach; endif; else: echo "" ;endif; ?>
+                                          </ul>
+                                        " data-html="true" ><small>+<?php echo ($product["labelsum"]); ?></small>
+                                      </a>
+                                      </li>
+                                    </ul>
+                                  </div>  <!-- 标签列表 end -->
+                                </div>   <!-- 第二列第二行 点赞分享等按钮 end -->
+                              </div>  <!-- 第二列列表信息 end-->
+                            </div>
+                          </div>
+                        </div>
+                        <hr class="hr-list-content">
+                      </div>  <!-- 整列第一行col end-->
+                    </div><?php endforeach; endif; else: echo "" ;endif; ?>
+
                   <div class="row" onmouseover="this.style.backgroundColor='#F9F9F9'"  onmouseout="this.style.backgroundColor='white'">    <!-- 面板内容整列第1行row start -->
                     <div class="col-md-12">   <!-- 整列第一行col start-->
                       <div class="row">
@@ -1232,290 +1283,7 @@
                     </div>  <!-- 整列第一行col end-->
                   </div> <!-- 面板内容整列第1行row end -->
 
-                  <div class="row" onmouseover="this.style.backgroundColor='#F9F9F9'"  onmouseout="this.style.backgroundColor='white'">    <!-- 面板内容整列第2行row start -->
-                    <div class="col-md-12">   <!-- 整列第一行col start-->
-                      <div class="row">
-                        <div class="col-md-12 list-content-mar">                      
-                          <div class="row">
-                            <div class="col-md-2">   <!--第一列图片 start -->
-                              <img src="Public/img/list2.jpg" class="img-responsive img-padd" alt="Responsive image" style="width:100px;heigth:100px;">
-                            </div>       <!--第一列图片 end -->
-                            <div class="col-md-10">   <!-- 第二列列表信息 start-->
-                              <div class="row"> <!-- 第二列第一行基本信息 start-->
-                                <div class="col-md-10">  <!-- 标题、描述信息start-->
-                                  <ul class="list-unstyled">
-                                    <li><h4>天启学堂：早幼教机构移动办公平台</h4></li>
-                                    <li><p class="dis-p-color"><small>早教机构教务管理系统，3 秒排课，一键签到，孩子的作品家长一目了然。早教机构教务管理系统，3 秒排课，一键签到，孩子的作品家长一目了然。</small></p></li>
-                                  </ul>
-                                </div> <!-- 标题、描述信息end-->
-                                <div class="col-md-2">    <!-- 上传者头像信息 ，预留未开发 start -->
-                                  &nbsp;
-                                </div>  <!-- 上传者头像信息end -->
-                              </div>  <!-- 第二列第一行基本信息 end-->
-                              <div class="row">   <!-- 第二列第二行 点赞分享等按钮 start -->
-                                <div class="col-md-8">     <!-- 点赞、评论数、收藏、分享 start-->
-                                  <ul class="list-unstyled list-inline ">
-                                    <li><a class="btn btn-defaults-red btn-sm-list"><i class="fa fa-heart fa-fw"></i>&nbsp;536</a></li>
-                                    <li><a class="btn btn-defaults-chat btn-sm-list"><i class="fa fa-comment fa-fw"></i>&nbsp;109</a></li>
-                                    <li><a class="btn btn-defaults-chat btn-sm-list"><i class="fa fa-plus fa-fw"></i>&nbsp;收藏</a></li>
-                                    <li><a class="btn btn-defaults-chat btn-sm-list"><i class="fa fa-send-o fa-fw"></i>&nbsp;分享</a></li>
-                                  </ul>
-                                </div>   <!-- 点赞、评论数、收藏、分享 end-->
-                                <div class="col-md-4" id="spans">    <!-- 标签列表 start -->
-                                  <ul class="list-unstyled list-inline text-right">
-                                    <li>
-                                      <a class="" href="#"><span class="label label-default">前端框架</span></a>&nbsp;<a  href="javascript:;" id="pop1"  class="a-font" rel="popover" 
-                                        data-content="
-                                          <ul class='list-unstyled'>
-                                            <li '><a class='' href='#'><span class='label label-default label-defaults-popover'>前端框架ssssssssssssssssssss</span></a></li>
-                                            <li class='label-default-popover'><a class='' href='#'><span class='label label-default label-defaults-popover'>开源代码</span></a></li>
-                                            <li class='label-default-popover'><a class='' href='#'><span class='label label-default label-defaults-popover'>开源代</span></a></li>
-                                            <li class='label-default-popover'><a class='' href='#'><span class='label label-default label-defaults-popover'>开源代码</span></a></li>
-                                            <li class='label-default-popover'><a class='' href='#'><span class='label label-default label-defaults-popover'>开源</span></a></li>
-                                            <li class='label-default-popover'><a class='' href='#'><span class='label label-default label-defaults-popover'>Bootstrap</span></a></li>
-                                            <li class='label-default-popover'><a class='' href='#'><span class='label label-default label-defaults-popover'>开源代码</span></a></li>
-                                          </ul>
-                                        " data-html="true" ><small>+7</small>
-                                      </a>
-                                    </li>                                  
-                                  </ul>
-                                </div>  <!-- 标签列表 end -->
-                              </div>   <!-- 第二列第二行 点赞分享等按钮 end -->
-                            </div>  <!-- 第二列列表信息 end-->                                        
-                          </div>
-                        </div>
-                      </div> 
-                      <hr class="hr-list-content">
-                    </div>  <!-- 整列第一行col end-->
-                  </div> <!-- 面板内容整列第一行row end -->
-                   
-                  <div class="row" onmouseover="this.style.backgroundColor='#F9F9F9'"  onmouseout="this.style.backgroundColor='white'">    <!-- 面板内容整列第2行row start -->
-                    <div class="col-md-12" >   <!-- 整列第一行col start-->
-                      <div class="row">
-                        <div class="col-md-12 list-content-mar">                      
-                          <div class="row">
-                            <div class="col-md-2 ">   <!--第一列图片 start -->
-                              <img src="Public/img/list3.png" class="img-responsive img-padd" alt="Responsive image" style="width:100px;heigth:100px;">
-                            </div>       <!--第一列图片 end -->
-                            <div class="col-md-10">   <!-- 第二列列表信息 start-->
-                              <div class="row"> <!-- 第二列第一行基本信息 start-->
-                                <div class="col-md-10">  <!-- 标题、描述信息start-->
-                                  <ul class="list-unstyled">
-                                    <li><h4>Knotes：高效、优雅的 Kindle 标注管理器</h4></li>
-                                    <li><p class="dis-p-color"><small>Mac平台高效、优雅的Kindle标注管理器，连接即可同步，按作者管理书籍，快速搜索书名，无干扰阅读标注。</small></p></li>
-                                  </ul>
-                                </div> <!-- 标题、描述信息end-->
-                                <div class="col-md-2">    <!-- 上传者头像信息 ，预留未开发 start -->
-                                  &nbsp;
-                                </div>  <!-- 上传者头像信息end -->
-                              </div>  <!-- 第二列第一行基本信息 end-->
-                              <div class="row">   <!-- 第二列第二行 点赞分享等按钮 start -->
-                                <div class="col-md-8">     <!-- 点赞、评论数、收藏、分享 start-->
-                                  <ul class="list-unstyled list-inline ">
-                                    <li><a class="btn btn-defaults-red btn-sm-list"><i class="fa fa-heart fa-fw"></i>&nbsp;536</a></li>
-                                    <li><a class="btn btn-defaults-chat btn-sm-list"><i class="fa fa-comment fa-fw"></i>&nbsp;109</a></li>
-                                    <li><a class="btn btn-defaults-chat btn-sm-list"><i class="fa fa-plus fa-fw"></i>&nbsp;收藏</a></li>
-                                    <li><a class="btn btn-defaults-chat btn-sm-list"><i class="fa fa-send-o fa-fw"></i>&nbsp;分享</a></li>
-                                  </ul>
-                                </div>   <!-- 点赞、评论数、收藏、分享 end-->
-                                <div class="col-md-4" id="spans">    <!-- 标签列表 start -->
-                                  <ul class="list-unstyled list-inline text-right">
-                                    <li>
-                                      <a class="" href="#"><span class="label label-default">前端框架</span></a>&nbsp;<a  href="javascript:;" id="pop2"  class="a-font" rel="popover" 
-                                        data-content="
-                                          <ul class='list-unstyled'>
-                                            <li '><a class='' href='#'><span class='label label-default label-defaults-popover'>前端框架ssssssssssssssssssss</span></a></li>
-                                            <li class='label-default-popover'><a class='' href='#'><span class='label label-default label-defaults-popover'>开源代码</span></a></li>
-                                            <li class='label-default-popover'><a class='' href='#'><span class='label label-default label-defaults-popover'>开源代</span></a></li>
-                                            <li class='label-default-popover'><a class='' href='#'><span class='label label-default label-defaults-popover'>开源代码</span></a></li>
-                                            <li class='label-default-popover'><a class='' href='#'><span class='label label-default label-defaults-popover'>开源</span></a></li>
-                                            <li class='label-default-popover'><a class='' href='#'><span class='label label-default label-defaults-popover'>Bootstrap</span></a></li>
-                                            <li class='label-default-popover'><a class='' href='#'><span class='label label-default label-defaults-popover'>开源代码</span></a></li>
-                                          </ul>
-                                        " data-html="true" ><small>+7</small>
-                                      </a>
-                                    </li>                                  
-                                  </ul>
-                                </div>  <!-- 标签列表 end -->
-                              </div>   <!-- 第二列第二行 点赞分享等按钮 end -->
-                            </div>  <!-- 第二列列表信息 end-->                                        
-                          </div>
-                        </div>
-                      </div> 
-                      <hr class="hr-list-content">
-                    </div>  <!-- 整列第一行col end-->
-                  </div> <!-- 面板内容整列第一行row end -->
-                    
-                  <div class="row " onmouseover="this.style.backgroundColor='#F9F9F9'"  onmouseout="this.style.backgroundColor='white'">    <!-- 面板内容整列第3行row start -->
-                    <div class="col-md-12">   <!-- 整列第一行col start-->
-                      <div class="row">
-                        <div class="col-md-12 list-content-mar">                      
-                          <div class="row">
-                            <div class="col-md-2 ">   <!--第一列图片 start -->
-                              <img src="Public/img/list4.png" class="img-responsive img-padd" alt="Responsive image" style="width:100px;heigth:100px;">
-                            </div>       <!--第一列图片 end -->
-                            <div class="col-md-10">   <!-- 第二列列表信息 start-->
-                              <div class="row"> <!-- 第二列第一行基本信息 start-->
-                                <div class="col-md-10">  <!-- 标题、描述信息start-->
-                                  <ul class="list-unstyled">
-                                    <li><h4>undunion：移动出行技术服务</h4></li>
-                                    <li><p class="dis-p-color"><small>以技术创新满足个人或出行企业需求为主线，基于自身开发的一套企业版后台管理系统，为企业提供了完整规范的出行管理解决方案。</small></p></li>
-                                  </ul>
-                                </div> <!-- 标题、描述信息end-->
-                                <div class="col-md-2">    <!-- 上传者头像信息 ，预留未开发 start -->
-                                  &nbsp;
-                                </div>  <!-- 上传者头像信息end -->
-                              </div>  <!-- 第二列第一行基本信息 end-->
-                              <div class="row">   <!-- 第二列第二行 点赞分享等按钮 start -->
-                                <div class="col-md-8">     <!-- 点赞、评论数、收藏、分享 start-->
-                                  <ul class="list-unstyled list-inline ">
-                                    <li><a class="btn btn-defaults-red btn-sm-list"><i class="fa fa-heart fa-fw"></i>&nbsp;536</a></li>
-                                    <li><a class="btn btn-defaults-chat btn-sm-list"><i class="fa fa-comment fa-fw"></i>&nbsp;109</a></li>
-                                    <li><a class="btn btn-defaults-chat btn-sm-list"><i class="fa fa-plus fa-fw"></i>&nbsp;收藏</a></li>
-                                    <li><a class="btn btn-defaults-chat btn-sm-list"><i class="fa fa-send-o fa-fw"></i>&nbsp;分享</a></li>
-                                  </ul>
-                                </div>   <!-- 点赞、评论数、收藏、分享 end-->
-                                <div class="col-md-4" id="spans">    <!-- 标签列表 start -->
-                                  <ul class="list-unstyled list-inline text-right">
-                                    <li>
-                                      <a class="" href="#"><span class="label label-default">前端框架</span></a>&nbsp;<a  href="javascript:;" id="pop3"  class="a-font" rel="popover" 
-                                        data-content="
-                                          <ul class='list-unstyled'>
-                                            <li '><a class='' href='#'><span class='label label-default label-defaults-popover'>前端框架ssssssssssssssssssss</span></a></li>
-                                            <li class='label-default-popover'><a class='' href='#'><span class='label label-default label-defaults-popover'>开源代码</span></a></li>
-                                            <li class='label-default-popover'><a class='' href='#'><span class='label label-default label-defaults-popover'>开源代</span></a></li>
-                                            <li class='label-default-popover'><a class='' href='#'><span class='label label-default label-defaults-popover'>开源代码</span></a></li>
-                                            <li class='label-default-popover'><a class='' href='#'><span class='label label-default label-defaults-popover'>开源</span></a></li>
-                                            <li class='label-default-popover'><a class='' href='#'><span class='label label-default label-defaults-popover'>Bootstrap</span></a></li>
-                                            <li class='label-default-popover'><a class='' href='#'><span class='label label-default label-defaults-popover'>开源代码</span></a></li>
-                                          </ul>
-                                        " data-html="true" ><small>+7</small>
-                                      </a>
-                                    </li>                                  
-                                  </ul>
-                                </div>  <!-- 标签列表 end -->
-                              </div>   <!-- 第二列第二行 点赞分享等按钮 end -->
-                            </div>  <!-- 第二列列表信息 end-->                                        
-                          </div>
-                        </div>
-                      </div> 
-                      <hr class="hr-list-content">
-                    </div>  <!-- 整列第一行col end-->
-                  </div> <!-- 面板内容整列第3行row end -->
 
-                  <div class="row" onmouseover="this.style.backgroundColor='#F9F9F9'"  onmouseout="this.style.backgroundColor='white'">    <!-- 面板内容整列第4行row start -->
-                    <div class="col-md-12">   <!-- 整列第一行col start-->
-                      <div class="row">
-                        <div class="col-md-12 list-content-mar">                      
-                          <div class="row">
-                            <div class="col-md-2 ">   <!--第一列图片 start -->
-                              <img src="Public/img/list5.jpg" class="img-responsive img-padd" alt="Responsive image" style="width:100px;heigth:100px;">
-                            </div>       <!--第一列图片 end -->
-                            <div class="col-md-10">   <!-- 第二列列表信息 start-->
-                              <div class="row"> <!-- 第二列第一行基本信息 start-->
-                                <div class="col-md-10">  <!-- 标题、描述信息start-->
-                                  <ul class="list-unstyled">
-                                    <li><h4>捷税宝：免费税务筹划咨询和落地执行 </h4></li>
-                                    <li><p class="dis-p-color"><small>通过大数据以及智能匹配等技术，帮助企业主精准对接财务专家的互联网项目，目前主要为中小微企业提供服务。</small></p></li>
-                                  </ul>
-                                </div> <!-- 标题、描述信息end-->
-                                <div class="col-md-2">    <!-- 上传者头像信息 ，预留未开发 start -->
-                                  &nbsp;
-                                </div>  <!-- 上传者头像信息end -->
-                              </div>  <!-- 第二列第一行基本信息 end-->
-                              <div class="row">   <!-- 第二列第二行 点赞分享等按钮 start -->
-                                <div class="col-md-8">     <!-- 点赞、评论数、收藏、分享 start-->
-                                  <ul class="list-unstyled list-inline ">
-                                    <li><a class="btn btn-defaults-red btn-sm-list"><i class="fa fa-heart fa-fw"></i>&nbsp;536</a></li>
-                                    <li><a class="btn btn-defaults-chat btn-sm-list"><i class="fa fa-comment fa-fw"></i>&nbsp;109</a></li>
-                                    <li><a class="btn btn-defaults-chat btn-sm-list"><i class="fa fa-plus fa-fw"></i>&nbsp;收藏</a></li>
-                                    <li><a class="btn btn-defaults-chat btn-sm-list"><i class="fa fa-send-o fa-fw"></i>&nbsp;分享</a></li>
-                                  </ul>
-                                </div>   <!-- 点赞、评论数、收藏、分享 end-->
-                                <div class="col-md-4" id="spans">    <!-- 标签列表 start -->
-                                  <ul class="list-unstyled list-inline text-right">
-                                    <li>
-                                      <a class="" href="#"><span class="label label-default">前端框架</span></a>&nbsp;<a  href="javascript:;" id="pop4"  class="a-font" rel="popover" 
-                                        data-content="
-                                          <ul class='list-unstyled'>
-                                            <li '><a class='' href='#'><span class='label label-default label-defaults-popover'>前端框架ssssssssssssssssssss</span></a></li>
-                                            <li class='label-default-popover'><a class='' href='#'><span class='label label-default label-defaults-popover'>开源代码</span></a></li>
-                                            <li class='label-default-popover'><a class='' href='#'><span class='label label-default label-defaults-popover'>开源代</span></a></li>
-                                            <li class='label-default-popover'><a class='' href='#'><span class='label label-default label-defaults-popover'>开源代码</span></a></li>
-                                            <li class='label-default-popover'><a class='' href='#'><span class='label label-default label-defaults-popover'>开源</span></a></li>
-                                            <li class='label-default-popover'><a class='' href='#'><span class='label label-default label-defaults-popover'>Bootstrap</span></a></li>
-                                            <li class='label-default-popover'><a class='' href='#'><span class='label label-default label-defaults-popover'>开源代码</span></a></li>
-                                          </ul>
-                                        " data-html="true" ><small>+7</small>
-                                      </a>
-                                    </li>                                  
-                                  </ul>
-                                </div>  <!-- 标签列表 end -->
-                              </div>   <!-- 第二列第二行 点赞分享等按钮 end -->
-                            </div>  <!-- 第二列列表信息 end-->                                        
-                          </div>
-                        </div>
-                      </div> 
-                      <hr class="hr-list-content">
-                    </div>  <!-- 整列第一行col end-->
-                  </div> <!-- 面板内容整列第4行row end -->
-
-                  <div class="row" onmouseover="this.style.backgroundColor='#F9F9F9'"  onmouseout="this.style.backgroundColor='white'">    <!-- 面板内容整列第5行row start -->
-                    <div class="col-md-12">   <!-- 整列第一行col start-->
-                      <div class="row">
-                        <div class="col-md-12 list-content-mar">                      
-                          <div class="row">
-                            <div class="col-md-2 ">   <!--第一列图片 start -->
-                              <img src="Public/img/list6.jpg" class="img-responsive img-padd" alt="Responsive image" style="width:100px;heigth:100px;">
-                            </div>       <!--第一列图片 end -->
-                            <div class="col-md-10">   <!-- 第二列列表信息 start-->
-                              <div class="row"> <!-- 第二列第一行基本信息 start-->
-                                <div class="col-md-10">  <!-- 标题、描述信息start-->
-                                  <ul class="list-unstyled">
-                                    <li><h4>颜面：独家定制创意风格画像</h4></li>
-                                    <li><p class="dis-p-color"><small>国内垂直的画像定制服务平台，让用户可以寻找各种风格类型的画师，独家定制自己创意画像的平台。国内垂直的画像定制服务平台，让用户可以寻找各种风格类型的画师，独家定制自己创意画像的平台。</small></p></li>
-                                  </ul>
-                                </div> <!-- 标题、描述信息end-->
-                                <div class="col-md-2">    <!-- 上传者头像信息 ，预留未开发 start -->
-                                  &nbsp;
-                                </div>  <!-- 上传者头像信息end -->
-                              </div>  <!-- 第二列第一行基本信息 end-->
-                              <div class="row">   <!-- 第二列第二行 点赞分享等按钮 start -->
-                                <div class="col-md-8">     <!-- 点赞、评论数、收藏、分享 start-->
-                                  <ul class="list-unstyled list-inline ">
-                                    <li><a class="btn btn-defaults-red btn-sm-list"><i class="fa fa-heart fa-fw"></i>&nbsp;536</a></li>
-                                    <li><a class="btn btn-defaults-chat btn-sm-list"><i class="fa fa-comment fa-fw"></i>&nbsp;109</a></li>
-                                    <li><a class="btn btn-defaults-chat btn-sm-list"><i class="fa fa-plus fa-fw"></i>&nbsp;收藏</a></li>
-                                    <li><a class="btn btn-defaults-chat btn-sm-list"><i class="fa fa-send-o fa-fw"></i>&nbsp;分享</a></li>
-                                  </ul>
-                                </div>   <!-- 点赞、评论数、收藏、分享 end-->
-                                <div class="col-md-4" id="spans">    <!-- 标签列表 start -->
-                                  <ul class="list-unstyled list-inline text-right">
-                                    <li>
-                                      <a class="" href="#"><span class="label label-default">前端框架</span></a>&nbsp;<a  href="javascript:;" id="pop5"  class="a-font" rel="popover" 
-                                        data-content="
-                                          <ul class='list-unstyled'>
-                                            <li '><a class='' href='#'><span class='label label-default label-defaults-popover'>前端框架ssssssssssssssssssss</span></a></li>
-                                            <li class='label-default-popover'><a class='' href='#'><span class='label label-default label-defaults-popover'>开源代码</span></a></li>
-                                            <li class='label-default-popover'><a class='' href='#'><span class='label label-default label-defaults-popover'>开源代</span></a></li>
-                                            <li class='label-default-popover'><a class='' href='#'><span class='label label-default label-defaults-popover'>开源代码</span></a></li>
-                                            <li class='label-default-popover'><a class='' href='#'><span class='label label-default label-defaults-popover'>开源</span></a></li>
-                                            <li class='label-default-popover'><a class='' href='#'><span class='label label-default label-defaults-popover'>Bootstrap</span></a></li>
-                                            <li class='label-default-popover'><a class='' href='#'><span class='label label-default label-defaults-popover'>开源代码</span></a></li>
-                                          </ul>
-                                        " data-html="true" ><small>+7</small>
-                                      </a>
-                                    </li>                                  
-                                  </ul>
-                                </div>  <!-- 标签列表 end -->
-                              </div>   <!-- 第二列第二行 点赞分享等按钮 end -->
-                            </div>  <!-- 第二列列表信息 end-->                                        
-                          </div>
-                        </div>
-                      </div> 
-                      
-                    </div>  <!-- 整列第一行col end-->
-                  </div> <!-- 面板内容整列第5 row end -->
                   <div class="row seemoreabout">
                     <div class="col-md-12">
                       <ul class="list-unstyled list-inline text-center">
@@ -1533,11 +1301,11 @@
 
 
 
-           <!--- start   不可关闭的按日期推荐 今日
+           <!--- start   不可关闭的按日期推荐 日期
           ==========================================-->
-          <div class="row">  <!-- 内容区row start-->
-            <div class="col-md-12">  <!-- 内容区col start -->
-              <div class="panel panel-default">  <!-- 面板列 start -->
+          <!--<div class="row">  &lt;!&ndash; 内容区row start&ndash;&gt;
+            <div class="col-md-12">  &lt;!&ndash; 内容区col start &ndash;&gt;
+              <div class="panel panel-default">  &lt;!&ndash; 面板列 start &ndash;&gt;
                 <div class="panel-heading ">
                   <div class="row ">
                     <div class="col-md-10">
@@ -1553,37 +1321,37 @@
                   </div>
                   
                 </div>
-                <div class="panel-body ">   <!-- 面板内容start -->
-                  <div class="row" onmouseover="this.style.backgroundColor='#F9F9F9'"  onmouseout="this.style.backgroundColor='white'">    <!-- 面板内容整列第1行row start -->
-                    <div class="col-md-12">   <!-- 整列第一行col start-->
+                <div class="panel-body ">   &lt;!&ndash; 面板内容start &ndash;&gt;
+                  <div class="row" onmouseover="this.style.backgroundColor='#F9F9F9'"  onmouseout="this.style.backgroundColor='white'">    &lt;!&ndash; 面板内容整列第1行row start &ndash;&gt;
+                    <div class="col-md-12">   &lt;!&ndash; 整列第一行col start&ndash;&gt;
                       <div class="row">
                         <div class="col-md-12 list-content-mar">                      
                           <div class="row">
-                            <div class="col-md-2 ">   <!--第一列图片 start -->
+                            <div class="col-md-2 ">   &lt;!&ndash;第一列图片 start &ndash;&gt;
                               <img src="Public/img/list1.jpg" class="img-responsive img-padd" alt="Responsive image" style="width:100px;heigth:100px;">
-                            </div>       <!--第一列图片 end -->
-                            <div class="col-md-10">   <!-- 第二列列表信息 start-->
-                              <div class="row"> <!-- 第二列第一行基本信息 start-->
-                                <div class="col-md-10">  <!-- 标题、描述信息start-->
+                            </div>       &lt;!&ndash;第一列图片 end &ndash;&gt;
+                            <div class="col-md-10">   &lt;!&ndash; 第二列列表信息 start&ndash;&gt;
+                              <div class="row"> &lt;!&ndash; 第二列第一行基本信息 start&ndash;&gt;
+                                <div class="col-md-10">  &lt;!&ndash; 标题、描述信息start&ndash;&gt;
                                   <ul class="list-unstyled">
                                     <li><h4>Alarmy：能够叫醒你的闹钟</h4></li>
                                     <li><p class="dis-p-color"><small>三招让你起床服服帖帖。拍照模式：下床活动，到事先拍好的照片地（如客厅）拍照解锁；防抖模式：要关闭闹钟，请摇动手机；数学题模式：要关闭闹铃，先解道数学问题。</small></p></li>
                                   </ul>
-                                </div> <!-- 标题、描述信息end-->
-                                <div class="col-md-2">    <!-- 上传者头像信息 ，预留未开发 start -->
+                                </div> &lt;!&ndash; 标题、描述信息end&ndash;&gt;
+                                <div class="col-md-2">    &lt;!&ndash; 上传者头像信息 ，预留未开发 start &ndash;&gt;
                                   &nbsp;
-                                </div>  <!-- 上传者头像信息end -->
-                              </div>  <!-- 第二列第一行基本信息 end-->
-                              <div class="row">   <!-- 第二列第二行 点赞分享等按钮 start -->
-                                <div class="col-md-8">     <!-- 点赞、评论数、收藏、分享 start-->
+                                </div>  &lt;!&ndash; 上传者头像信息end &ndash;&gt;
+                              </div>  &lt;!&ndash; 第二列第一行基本信息 end&ndash;&gt;
+                              <div class="row">   &lt;!&ndash; 第二列第二行 点赞分享等按钮 start &ndash;&gt;
+                                <div class="col-md-8">     &lt;!&ndash; 点赞、评论数、收藏、分享 start&ndash;&gt;
                                   <ul class="list-unstyled list-inline ">
                                     <li><a class="btn btn-defaults-red btn-sm-list"><i class="fa fa-heart fa-fw"></i>&nbsp;536</a></li>
                                     <li><a class="btn btn-defaults-chat btn-sm-list"><i class="fa fa-comment fa-fw"></i>&nbsp;109</a></li>
                                     <li><a class="btn btn-defaults-chat btn-sm-list"><i class="fa fa-plus fa-fw"></i>&nbsp;收藏</a></li>
                                     <li><a class="btn btn-defaults-chat btn-sm-list"><i class="fa fa-send-o fa-fw"></i>&nbsp;分享</a></li>
                                   </ul>
-                                </div>   <!-- 点赞、评论数、收藏、分享 end-->
-                                <div class="col-md-4" id="spans">    <!-- 标签列表 start -->
+                                </div>   &lt;!&ndash; 点赞、评论数、收藏、分享 end&ndash;&gt;
+                                <div class="col-md-4" id="spans">    &lt;!&ndash; 标签列表 start &ndash;&gt;
                                   <ul class="list-unstyled list-inline text-right">
                                     <li>
                                       <a class="" href="#"><span class="label label-default">前端框架</span></a>&nbsp;<a  href="javascript:;" id="pop22"  class="a-font" rel="popover" 
@@ -1596,46 +1364,46 @@
                                       </a>
                                     </li>                                  
                                   </ul>
-                                </div>  <!-- 标签列表 end -->
-                              </div>   <!-- 第二列第二行 点赞分享等按钮 end -->
-                            </div>  <!-- 第二列列表信息 end-->                                        
+                                </div>  &lt;!&ndash; 标签列表 end &ndash;&gt;
+                              </div>   &lt;!&ndash; 第二列第二行 点赞分享等按钮 end &ndash;&gt;
+                            </div>  &lt;!&ndash; 第二列列表信息 end&ndash;&gt;
                           </div>
                         </div>
                       </div> 
                       <hr class="hr-list-content">
-                    </div>  <!-- 整列第一行col end-->
-                  </div> <!-- 面板内容整列第1行row end -->
+                    </div>  &lt;!&ndash; 整列第一行col end&ndash;&gt;
+                  </div> &lt;!&ndash; 面板内容整列第1行row end &ndash;&gt;
 
-                  <div class="row" onmouseover="this.style.backgroundColor='#F9F9F9'"  onmouseout="this.style.backgroundColor='white'">    <!-- 面板内容整列第2行row start -->
-                    <div class="col-md-12">   <!-- 整列第一行col start-->
+                  <div class="row" onmouseover="this.style.backgroundColor='#F9F9F9'"  onmouseout="this.style.backgroundColor='white'">    &lt;!&ndash; 面板内容整列第2行row start &ndash;&gt;
+                    <div class="col-md-12">   &lt;!&ndash; 整列第一行col start&ndash;&gt;
                       <div class="row">
                         <div class="col-md-12 list-content-mar">                      
                           <div class="row">
-                            <div class="col-md-2">   <!--第一列图片 start -->
+                            <div class="col-md-2">   &lt;!&ndash;第一列图片 start &ndash;&gt;
                               <img src="Public/img/list2.jpg" class="img-responsive img-padd" alt="Responsive image" style="width:100px;heigth:100px;">
-                            </div>       <!--第一列图片 end -->
-                            <div class="col-md-10">   <!-- 第二列列表信息 start-->
-                              <div class="row"> <!-- 第二列第一行基本信息 start-->
-                                <div class="col-md-10">  <!-- 标题、描述信息start-->
+                            </div>       &lt;!&ndash;第一列图片 end &ndash;&gt;
+                            <div class="col-md-10">   &lt;!&ndash; 第二列列表信息 start&ndash;&gt;
+                              <div class="row"> &lt;!&ndash; 第二列第一行基本信息 start&ndash;&gt;
+                                <div class="col-md-10">  &lt;!&ndash; 标题、描述信息start&ndash;&gt;
                                   <ul class="list-unstyled">
                                     <li><h4>天启学堂：早幼教机构移动办公平台</h4></li>
                                     <li><p class="dis-p-color"><small>早教机构教务管理系统，3 秒排课，一键签到，孩子的作品家长一目了然。早教机构教务管理系统，3 秒排课，一键签到，孩子的作品家长一目了然。</small></p></li>
                                   </ul>
-                                </div> <!-- 标题、描述信息end-->
-                                <div class="col-md-2">    <!-- 上传者头像信息 ，预留未开发 start -->
+                                </div> &lt;!&ndash; 标题、描述信息end&ndash;&gt;
+                                <div class="col-md-2">    &lt;!&ndash; 上传者头像信息 ，预留未开发 start &ndash;&gt;
                                   &nbsp;
-                                </div>  <!-- 上传者头像信息end -->
-                              </div>  <!-- 第二列第一行基本信息 end-->
-                              <div class="row">   <!-- 第二列第二行 点赞分享等按钮 start -->
-                                <div class="col-md-8">     <!-- 点赞、评论数、收藏、分享 start-->
+                                </div>  &lt;!&ndash; 上传者头像信息end &ndash;&gt;
+                              </div>  &lt;!&ndash; 第二列第一行基本信息 end&ndash;&gt;
+                              <div class="row">   &lt;!&ndash; 第二列第二行 点赞分享等按钮 start &ndash;&gt;
+                                <div class="col-md-8">     &lt;!&ndash; 点赞、评论数、收藏、分享 start&ndash;&gt;
                                   <ul class="list-unstyled list-inline ">
                                     <li><a class="btn btn-defaults-red btn-sm-list"><i class="fa fa-heart fa-fw"></i>&nbsp;536</a></li>
                                     <li><a class="btn btn-defaults-chat btn-sm-list"><i class="fa fa-comment fa-fw"></i>&nbsp;109</a></li>
                                     <li><a class="btn btn-defaults-chat btn-sm-list"><i class="fa fa-plus fa-fw"></i>&nbsp;收藏</a></li>
                                     <li><a class="btn btn-defaults-chat btn-sm-list"><i class="fa fa-send-o fa-fw"></i>&nbsp;分享</a></li>
                                   </ul>
-                                </div>   <!-- 点赞、评论数、收藏、分享 end-->
-                                <div class="col-md-4" id="spans">    <!-- 标签列表 start -->
+                                </div>   &lt;!&ndash; 点赞、评论数、收藏、分享 end&ndash;&gt;
+                                <div class="col-md-4" id="spans">    &lt;!&ndash; 标签列表 start &ndash;&gt;
                                   <ul class="list-unstyled list-inline text-right">
                                     <li>
                                       <a class="" href="#"><span class="label label-default">前端框架</span></a>&nbsp;<a  href="javascript:;" id="pop1"  class="a-font" rel="popover" 
@@ -1653,46 +1421,46 @@
                                       </a>
                                     </li>                                  
                                   </ul>
-                                </div>  <!-- 标签列表 end -->
-                              </div>   <!-- 第二列第二行 点赞分享等按钮 end -->
-                            </div>  <!-- 第二列列表信息 end-->                                        
+                                </div>  &lt;!&ndash; 标签列表 end &ndash;&gt;
+                              </div>   &lt;!&ndash; 第二列第二行 点赞分享等按钮 end &ndash;&gt;
+                            </div>  &lt;!&ndash; 第二列列表信息 end&ndash;&gt;
                           </div>
                         </div>
                       </div> 
                       <hr class="hr-list-content">
-                    </div>  <!-- 整列第一行col end-->
-                  </div> <!-- 面板内容整列第一行row end -->
+                    </div>  &lt;!&ndash; 整列第一行col end&ndash;&gt;
+                  </div> &lt;!&ndash; 面板内容整列第一行row end &ndash;&gt;
                    
-                  <div class="row" onmouseover="this.style.backgroundColor='#F9F9F9'"  onmouseout="this.style.backgroundColor='white'">    <!-- 面板内容整列第2行row start -->
-                    <div class="col-md-12" >   <!-- 整列第一行col start-->
+                  <div class="row" onmouseover="this.style.backgroundColor='#F9F9F9'"  onmouseout="this.style.backgroundColor='white'">    &lt;!&ndash; 面板内容整列第2行row start &ndash;&gt;
+                    <div class="col-md-12" >   &lt;!&ndash; 整列第一行col start&ndash;&gt;
                       <div class="row">
                         <div class="col-md-12 list-content-mar">                      
                           <div class="row">
-                            <div class="col-md-2 ">   <!--第一列图片 start -->
+                            <div class="col-md-2 ">   &lt;!&ndash;第一列图片 start &ndash;&gt;
                               <img src="Public/img/list3.png" class="img-responsive img-padd" alt="Responsive image" style="width:100px;heigth:100px;">
-                            </div>       <!--第一列图片 end -->
-                            <div class="col-md-10">   <!-- 第二列列表信息 start-->
-                              <div class="row"> <!-- 第二列第一行基本信息 start-->
-                                <div class="col-md-10">  <!-- 标题、描述信息start-->
+                            </div>       &lt;!&ndash;第一列图片 end &ndash;&gt;
+                            <div class="col-md-10">   &lt;!&ndash; 第二列列表信息 start&ndash;&gt;
+                              <div class="row"> &lt;!&ndash; 第二列第一行基本信息 start&ndash;&gt;
+                                <div class="col-md-10">  &lt;!&ndash; 标题、描述信息start&ndash;&gt;
                                   <ul class="list-unstyled">
                                     <li><h4>Knotes：高效、优雅的 Kindle 标注管理器</h4></li>
                                     <li><p class="dis-p-color"><small>Mac平台高效、优雅的Kindle标注管理器，连接即可同步，按作者管理书籍，快速搜索书名，无干扰阅读标注。</small></p></li>
                                   </ul>
-                                </div> <!-- 标题、描述信息end-->
-                                <div class="col-md-2">    <!-- 上传者头像信息 ，预留未开发 start -->
+                                </div> &lt;!&ndash; 标题、描述信息end&ndash;&gt;
+                                <div class="col-md-2">    &lt;!&ndash; 上传者头像信息 ，预留未开发 start &ndash;&gt;
                                   &nbsp;
-                                </div>  <!-- 上传者头像信息end -->
-                              </div>  <!-- 第二列第一行基本信息 end-->
-                              <div class="row">   <!-- 第二列第二行 点赞分享等按钮 start -->
-                                <div class="col-md-8">     <!-- 点赞、评论数、收藏、分享 start-->
+                                </div>  &lt;!&ndash; 上传者头像信息end &ndash;&gt;
+                              </div>  &lt;!&ndash; 第二列第一行基本信息 end&ndash;&gt;
+                              <div class="row">   &lt;!&ndash; 第二列第二行 点赞分享等按钮 start &ndash;&gt;
+                                <div class="col-md-8">     &lt;!&ndash; 点赞、评论数、收藏、分享 start&ndash;&gt;
                                   <ul class="list-unstyled list-inline ">
                                     <li><a class="btn btn-defaults-red btn-sm-list"><i class="fa fa-heart fa-fw"></i>&nbsp;536</a></li>
                                     <li><a class="btn btn-defaults-chat btn-sm-list"><i class="fa fa-comment fa-fw"></i>&nbsp;109</a></li>
                                     <li><a class="btn btn-defaults-chat btn-sm-list"><i class="fa fa-plus fa-fw"></i>&nbsp;收藏</a></li>
                                     <li><a class="btn btn-defaults-chat btn-sm-list"><i class="fa fa-send-o fa-fw"></i>&nbsp;分享</a></li>
                                   </ul>
-                                </div>   <!-- 点赞、评论数、收藏、分享 end-->
-                                <div class="col-md-4" id="spans">    <!-- 标签列表 start -->
+                                </div>   &lt;!&ndash; 点赞、评论数、收藏、分享 end&ndash;&gt;
+                                <div class="col-md-4" id="spans">    &lt;!&ndash; 标签列表 start &ndash;&gt;
                                   <ul class="list-unstyled list-inline text-right">
                                     <li>
                                       <a class="" href="#"><span class="label label-default">前端框架</span></a>&nbsp;<a  href="javascript:;" id="pop2"  class="a-font" rel="popover" 
@@ -1710,46 +1478,46 @@
                                       </a>
                                     </li>                                  
                                   </ul>
-                                </div>  <!-- 标签列表 end -->
-                              </div>   <!-- 第二列第二行 点赞分享等按钮 end -->
-                            </div>  <!-- 第二列列表信息 end-->                                        
+                                </div>  &lt;!&ndash; 标签列表 end &ndash;&gt;
+                              </div>   &lt;!&ndash; 第二列第二行 点赞分享等按钮 end &ndash;&gt;
+                            </div>  &lt;!&ndash; 第二列列表信息 end&ndash;&gt;
                           </div>
                         </div>
                       </div> 
                       <hr class="hr-list-content">
-                    </div>  <!-- 整列第一行col end-->
-                  </div> <!-- 面板内容整列第一行row end -->
+                    </div>  &lt;!&ndash; 整列第一行col end&ndash;&gt;
+                  </div> &lt;!&ndash; 面板内容整列第一行row end &ndash;&gt;
                     
-                  <div class="row " onmouseover="this.style.backgroundColor='#F9F9F9'"  onmouseout="this.style.backgroundColor='white'">    <!-- 面板内容整列第3行row start -->
-                    <div class="col-md-12">   <!-- 整列第一行col start-->
+                  <div class="row " onmouseover="this.style.backgroundColor='#F9F9F9'"  onmouseout="this.style.backgroundColor='white'">    &lt;!&ndash; 面板内容整列第3行row start &ndash;&gt;
+                    <div class="col-md-12">   &lt;!&ndash; 整列第一行col start&ndash;&gt;
                       <div class="row">
                         <div class="col-md-12 list-content-mar">                      
                           <div class="row">
-                            <div class="col-md-2 ">   <!--第一列图片 start -->
+                            <div class="col-md-2 ">   &lt;!&ndash;第一列图片 start &ndash;&gt;
                               <img src="Public/img/list4.png" class="img-responsive img-padd" alt="Responsive image" style="width:100px;heigth:100px;">
-                            </div>       <!--第一列图片 end -->
-                            <div class="col-md-10">   <!-- 第二列列表信息 start-->
-                              <div class="row"> <!-- 第二列第一行基本信息 start-->
-                                <div class="col-md-10">  <!-- 标题、描述信息start-->
+                            </div>       &lt;!&ndash;第一列图片 end &ndash;&gt;
+                            <div class="col-md-10">   &lt;!&ndash; 第二列列表信息 start&ndash;&gt;
+                              <div class="row"> &lt;!&ndash; 第二列第一行基本信息 start&ndash;&gt;
+                                <div class="col-md-10">  &lt;!&ndash; 标题、描述信息start&ndash;&gt;
                                   <ul class="list-unstyled">
                                     <li><h4>undunion：移动出行技术服务</h4></li>
                                     <li><p class="dis-p-color"><small>以技术创新满足个人或出行企业需求为主线，基于自身开发的一套企业版后台管理系统，为企业提供了完整规范的出行管理解决方案。</small></p></li>
                                   </ul>
-                                </div> <!-- 标题、描述信息end-->
-                                <div class="col-md-2">    <!-- 上传者头像信息 ，预留未开发 start -->
+                                </div> &lt;!&ndash; 标题、描述信息end&ndash;&gt;
+                                <div class="col-md-2">    &lt;!&ndash; 上传者头像信息 ，预留未开发 start &ndash;&gt;
                                   &nbsp;
-                                </div>  <!-- 上传者头像信息end -->
-                              </div>  <!-- 第二列第一行基本信息 end-->
-                              <div class="row">   <!-- 第二列第二行 点赞分享等按钮 start -->
-                                <div class="col-md-8">     <!-- 点赞、评论数、收藏、分享 start-->
+                                </div>  &lt;!&ndash; 上传者头像信息end &ndash;&gt;
+                              </div>  &lt;!&ndash; 第二列第一行基本信息 end&ndash;&gt;
+                              <div class="row">   &lt;!&ndash; 第二列第二行 点赞分享等按钮 start &ndash;&gt;
+                                <div class="col-md-8">     &lt;!&ndash; 点赞、评论数、收藏、分享 start&ndash;&gt;
                                   <ul class="list-unstyled list-inline ">
                                     <li><a class="btn btn-defaults-red btn-sm-list"><i class="fa fa-heart fa-fw"></i>&nbsp;536</a></li>
                                     <li><a class="btn btn-defaults-chat btn-sm-list"><i class="fa fa-comment fa-fw"></i>&nbsp;109</a></li>
                                     <li><a class="btn btn-defaults-chat btn-sm-list"><i class="fa fa-plus fa-fw"></i>&nbsp;收藏</a></li>
                                     <li><a class="btn btn-defaults-chat btn-sm-list"><i class="fa fa-send-o fa-fw"></i>&nbsp;分享</a></li>
                                   </ul>
-                                </div>   <!-- 点赞、评论数、收藏、分享 end-->
-                                <div class="col-md-4" id="spans">    <!-- 标签列表 start -->
+                                </div>   &lt;!&ndash; 点赞、评论数、收藏、分享 end&ndash;&gt;
+                                <div class="col-md-4" id="spans">    &lt;!&ndash; 标签列表 start &ndash;&gt;
                                   <ul class="list-unstyled list-inline text-right">
                                     <li>
                                       <a class="" href="#"><span class="label label-default">前端框架</span></a>&nbsp;<a  href="javascript:;" id="pop3"  class="a-font" rel="popover" 
@@ -1767,46 +1535,46 @@
                                       </a>
                                     </li>                                  
                                   </ul>
-                                </div>  <!-- 标签列表 end -->
-                              </div>   <!-- 第二列第二行 点赞分享等按钮 end -->
-                            </div>  <!-- 第二列列表信息 end-->                                        
+                                </div>  &lt;!&ndash; 标签列表 end &ndash;&gt;
+                              </div>   &lt;!&ndash; 第二列第二行 点赞分享等按钮 end &ndash;&gt;
+                            </div>  &lt;!&ndash; 第二列列表信息 end&ndash;&gt;
                           </div>
                         </div>
                       </div> 
                       <hr class="hr-list-content">
-                    </div>  <!-- 整列第一行col end-->
-                  </div> <!-- 面板内容整列第3行row end -->
+                    </div>  &lt;!&ndash; 整列第一行col end&ndash;&gt;
+                  </div> &lt;!&ndash; 面板内容整列第3行row end &ndash;&gt;
 
-                  <div class="row" onmouseover="this.style.backgroundColor='#F9F9F9'"  onmouseout="this.style.backgroundColor='white'">    <!-- 面板内容整列第4行row start -->
-                    <div class="col-md-12">   <!-- 整列第一行col start-->
+                  <div class="row" onmouseover="this.style.backgroundColor='#F9F9F9'"  onmouseout="this.style.backgroundColor='white'">    &lt;!&ndash; 面板内容整列第4行row start &ndash;&gt;
+                    <div class="col-md-12">   &lt;!&ndash; 整列第一行col start&ndash;&gt;
                       <div class="row">
                         <div class="col-md-12 list-content-mar">                      
                           <div class="row">
-                            <div class="col-md-2 ">   <!--第一列图片 start -->
+                            <div class="col-md-2 ">   &lt;!&ndash;第一列图片 start &ndash;&gt;
                               <img src="Public/img/list5.jpg" class="img-responsive img-padd" alt="Responsive image" style="width:100px;heigth:100px;">
-                            </div>       <!--第一列图片 end -->
-                            <div class="col-md-10">   <!-- 第二列列表信息 start-->
-                              <div class="row"> <!-- 第二列第一行基本信息 start-->
-                                <div class="col-md-10">  <!-- 标题、描述信息start-->
+                            </div>       &lt;!&ndash;第一列图片 end &ndash;&gt;
+                            <div class="col-md-10">   &lt;!&ndash; 第二列列表信息 start&ndash;&gt;
+                              <div class="row"> &lt;!&ndash; 第二列第一行基本信息 start&ndash;&gt;
+                                <div class="col-md-10">  &lt;!&ndash; 标题、描述信息start&ndash;&gt;
                                   <ul class="list-unstyled">
                                     <li><h4>捷税宝：免费税务筹划咨询和落地执行 </h4></li>
                                     <li><p class="dis-p-color"><small>通过大数据以及智能匹配等技术，帮助企业主精准对接财务专家的互联网项目，目前主要为中小微企业提供服务。</small></p></li>
                                   </ul>
-                                </div> <!-- 标题、描述信息end-->
-                                <div class="col-md-2">    <!-- 上传者头像信息 ，预留未开发 start -->
+                                </div> &lt;!&ndash; 标题、描述信息end&ndash;&gt;
+                                <div class="col-md-2">    &lt;!&ndash; 上传者头像信息 ，预留未开发 start &ndash;&gt;
                                   &nbsp;
-                                </div>  <!-- 上传者头像信息end -->
-                              </div>  <!-- 第二列第一行基本信息 end-->
-                              <div class="row">   <!-- 第二列第二行 点赞分享等按钮 start -->
-                                <div class="col-md-8">     <!-- 点赞、评论数、收藏、分享 start-->
+                                </div>  &lt;!&ndash; 上传者头像信息end &ndash;&gt;
+                              </div>  &lt;!&ndash; 第二列第一行基本信息 end&ndash;&gt;
+                              <div class="row">   &lt;!&ndash; 第二列第二行 点赞分享等按钮 start &ndash;&gt;
+                                <div class="col-md-8">     &lt;!&ndash; 点赞、评论数、收藏、分享 start&ndash;&gt;
                                   <ul class="list-unstyled list-inline ">
                                     <li><a class="btn btn-defaults-red btn-sm-list"><i class="fa fa-heart fa-fw"></i>&nbsp;536</a></li>
                                     <li><a class="btn btn-defaults-chat btn-sm-list"><i class="fa fa-comment fa-fw"></i>&nbsp;109</a></li>
                                     <li><a class="btn btn-defaults-chat btn-sm-list"><i class="fa fa-plus fa-fw"></i>&nbsp;收藏</a></li>
                                     <li><a class="btn btn-defaults-chat btn-sm-list"><i class="fa fa-send-o fa-fw"></i>&nbsp;分享</a></li>
                                   </ul>
-                                </div>   <!-- 点赞、评论数、收藏、分享 end-->
-                                <div class="col-md-4" id="spans">    <!-- 标签列表 start -->
+                                </div>   &lt;!&ndash; 点赞、评论数、收藏、分享 end&ndash;&gt;
+                                <div class="col-md-4" id="spans">    &lt;!&ndash; 标签列表 start &ndash;&gt;
                                   <ul class="list-unstyled list-inline text-right">
                                     <li>
                                       <a class="" href="#"><span class="label label-default">前端框架</span></a>&nbsp;<a  href="javascript:;" id="pop4"  class="a-font" rel="popover" 
@@ -1824,46 +1592,46 @@
                                       </a>
                                     </li>                                  
                                   </ul>
-                                </div>  <!-- 标签列表 end -->
-                              </div>   <!-- 第二列第二行 点赞分享等按钮 end -->
-                            </div>  <!-- 第二列列表信息 end-->                                        
+                                </div>  &lt;!&ndash; 标签列表 end &ndash;&gt;
+                              </div>   &lt;!&ndash; 第二列第二行 点赞分享等按钮 end &ndash;&gt;
+                            </div>  &lt;!&ndash; 第二列列表信息 end&ndash;&gt;
                           </div>
                         </div>
                       </div> 
                       <hr class="hr-list-content">
-                    </div>  <!-- 整列第一行col end-->
-                  </div> <!-- 面板内容整列第4行row end -->
+                    </div>  &lt;!&ndash; 整列第一行col end&ndash;&gt;
+                  </div> &lt;!&ndash; 面板内容整列第4行row end &ndash;&gt;
 
-                  <div class="row" onmouseover="this.style.backgroundColor='#F9F9F9'"  onmouseout="this.style.backgroundColor='white'">    <!-- 面板内容整列第5行row start -->
-                    <div class="col-md-12">   <!-- 整列第一行col start-->
+                  <div class="row" onmouseover="this.style.backgroundColor='#F9F9F9'"  onmouseout="this.style.backgroundColor='white'">    &lt;!&ndash; 面板内容整列第5行row start &ndash;&gt;
+                    <div class="col-md-12">   &lt;!&ndash; 整列第一行col start&ndash;&gt;
                       <div class="row">
                         <div class="col-md-12 list-content-mar">                      
                           <div class="row">
-                            <div class="col-md-2 ">   <!--第一列图片 start -->
+                            <div class="col-md-2 ">   &lt;!&ndash;第一列图片 start &ndash;&gt;
                               <img src="Public/img/list6.jpg" class="img-responsive img-padd" alt="Responsive image" style="width:100px;heigth:100px;">
-                            </div>       <!--第一列图片 end -->
-                            <div class="col-md-10">   <!-- 第二列列表信息 start-->
-                              <div class="row"> <!-- 第二列第一行基本信息 start-->
-                                <div class="col-md-10">  <!-- 标题、描述信息start-->
+                            </div>       &lt;!&ndash;第一列图片 end &ndash;&gt;
+                            <div class="col-md-10">   &lt;!&ndash; 第二列列表信息 start&ndash;&gt;
+                              <div class="row"> &lt;!&ndash; 第二列第一行基本信息 start&ndash;&gt;
+                                <div class="col-md-10">  &lt;!&ndash; 标题、描述信息start&ndash;&gt;
                                   <ul class="list-unstyled">
                                     <li><h4>颜面：独家定制创意风格画像</h4></li>
                                     <li><p class="dis-p-color"><small>国内垂直的画像定制服务平台，让用户可以寻找各种风格类型的画师，独家定制自己创意画像的平台。国内垂直的画像定制服务平台，让用户可以寻找各种风格类型的画师，独家定制自己创意画像的平台。</small></p></li>
                                   </ul>
-                                </div> <!-- 标题、描述信息end-->
-                                <div class="col-md-2">    <!-- 上传者头像信息 ，预留未开发 start -->
+                                </div> &lt;!&ndash; 标题、描述信息end&ndash;&gt;
+                                <div class="col-md-2">    &lt;!&ndash; 上传者头像信息 ，预留未开发 start &ndash;&gt;
                                   &nbsp;
-                                </div>  <!-- 上传者头像信息end -->
-                              </div>  <!-- 第二列第一行基本信息 end-->
-                              <div class="row">   <!-- 第二列第二行 点赞分享等按钮 start -->
-                                <div class="col-md-8">     <!-- 点赞、评论数、收藏、分享 start-->
+                                </div>  &lt;!&ndash; 上传者头像信息end &ndash;&gt;
+                              </div>  &lt;!&ndash; 第二列第一行基本信息 end&ndash;&gt;
+                              <div class="row">   &lt;!&ndash; 第二列第二行 点赞分享等按钮 start &ndash;&gt;
+                                <div class="col-md-8">     &lt;!&ndash; 点赞、评论数、收藏、分享 start&ndash;&gt;
                                   <ul class="list-unstyled list-inline ">
                                     <li><a class="btn btn-defaults-red btn-sm-list"><i class="fa fa-heart fa-fw"></i>&nbsp;536</a></li>
                                     <li><a class="btn btn-defaults-chat btn-sm-list"><i class="fa fa-comment fa-fw"></i>&nbsp;109</a></li>
                                     <li><a class="btn btn-defaults-chat btn-sm-list"><i class="fa fa-plus fa-fw"></i>&nbsp;收藏</a></li>
                                     <li><a class="btn btn-defaults-chat btn-sm-list"><i class="fa fa-send-o fa-fw"></i>&nbsp;分享</a></li>
                                   </ul>
-                                </div>   <!-- 点赞、评论数、收藏、分享 end-->
-                                <div class="col-md-4" id="spans">    <!-- 标签列表 start -->
+                                </div>   &lt;!&ndash; 点赞、评论数、收藏、分享 end&ndash;&gt;
+                                <div class="col-md-4" id="spans">    &lt;!&ndash; 标签列表 start &ndash;&gt;
                                   <ul class="list-unstyled list-inline text-right">
                                     <li>
                                       <a class="" href="#"><span class="label label-default">前端框架</span></a>&nbsp;<a  href="javascript:;" id="pop5"  class="a-font" rel="popover" 
@@ -1881,27 +1649,27 @@
                                       </a>
                                     </li>                                  
                                   </ul>
-                                </div>  <!-- 标签列表 end -->
-                              </div>   <!-- 第二列第二行 点赞分享等按钮 end -->
-                            </div>  <!-- 第二列列表信息 end-->                                        
+                                </div>  &lt;!&ndash; 标签列表 end &ndash;&gt;
+                              </div>   &lt;!&ndash; 第二列第二行 点赞分享等按钮 end &ndash;&gt;
+                            </div>  &lt;!&ndash; 第二列列表信息 end&ndash;&gt;
                           </div>
                         </div>
                       </div> 
                       
-                    </div>  <!-- 整列第一行col end-->
-                  </div> <!-- 面板内容整列第5 row end -->
-                  <!--
+                    </div>  &lt;!&ndash; 整列第一行col end&ndash;&gt;
+                  </div> &lt;!&ndash; 面板内容整列第5 row end &ndash;&gt;
+                  &lt;!&ndash;
                   <div class="row seemoreabout">
                     <div class="col-md-12">
                       <ul class="list-unstyled list-inline text-center">
                         <li><a class="a-more" href="#"><strong><i class="fa fa-angle-down"></i></strong></a>&nbsp;&nbsp;<a class="a-more" href="#"><small><strong>查看更多(101)</strong></small></a></li>
                       </ul>
                     </div>
-                  </div>  -->
-               </div>  <!-- 面板内容end -->
-              </div>  <!-- 面板列 end -->
-            </div>  <!-- 主内容区col end-->
-          </div><!-- 主内容区row end-->
+                  </div>  &ndash;&gt;
+               </div>  &lt;!&ndash; 面板内容end &ndash;&gt;
+              </div>  &lt;!&ndash; 面板列 end &ndash;&gt;
+            </div>  &lt;!&ndash; 主内容区col end&ndash;&gt;
+          </div>--><!-- 主内容区row end-->
 
           <!--  end
           =========================================-->

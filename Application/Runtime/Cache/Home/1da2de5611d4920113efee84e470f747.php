@@ -70,25 +70,131 @@
 
 </head>
 <body>
+<style>
+
+
+
+    .z_photo {
+        width: 300px;
+        overflow: auto;
+        clear: both;
+        padding-top: 5px;
+        padding-bottom: 5px;
+
+
+    }
+
+    .z_photo img {
+        width: 100px;
+        height: 100px;
+    }
+
+    .z_addImg {
+        float: left;
+        padding-right: 10px;
+        padding-bottom: 10px;
+    }
+
+    .z_file {
+        width: 100px;
+        height: 100px;
+        background: url(Public/img/z_add.png) no-repeat;
+        background-size: 100% 100%;
+        float: left;
+        margin-right: 10px;
+    }
+
+    .z_file input::-webkit-file-upload-button {
+        width: 100px;
+        height: 100px;
+        position: absolute;
+        outline: 0;
+        opacity: 0;
+    }
+
+    .z_file input#file {
+        display: block;
+        width: auto;
+        border: 0;
+        vertical-align: middle;
+    }
+    /*遮罩层*/
+
+    .z_mask {
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, .5);
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 999;
+        display: none;
+    }
+
+    .z_alert {
+        width: 3rem;
+        height: 2rem;
+        border-radius: .2rem;
+        background: #fff;
+        font-size: .24rem;
+        text-align: center;
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        margin-left: -1.5rem;
+        margin-top: -2rem;
+    }
+
+    .z_alert p:nth-child(1) {
+        line-height: 1.5rem;
+    }
+
+    .z_alert p:nth-child(2) span {
+        display: inline-block;
+        width: 49%;
+        height: .5rem;
+        line-height: .5rem;
+        float: left;
+        border-top: 1px solid #ddd;
+    }
+
+    .z_cancel {
+        border-right: 1px solid #ddd;
+    }
+
+
+
+
+</style>
 <!--<form id= "uploadForm" action="index.php?m=home&c=index&a=upload_check" enctype="multipart/form-data" method="post" >-->
 <form id= "uploadForm" >
     <input type="text" name="name" />
-    <input type="file" name="photo" />
+    <input type="file" name="photo[]" />
+    <input type="file" name="photo[]" />
+    <div class="form-group">
+        <label for="inputEmail3" class="col-sm-3 control-label form-group-label">产品图片</label>
+        <div class="col-sm-7">
+            <div class="z_photo">
+                <div class="z_file">
+                    <input type="file" name="file[]" id="file" value="" accept="image/*" multiple onchange="imgChange('z_photo','z_file');" />
+                </div>
+            </div>
+        </div>
     <button type="button" value="提交" id="abc">提交</button>
 </form>
-</body>
+
 <script>
-    /*$('#abc').click(function () {
-        alert('asdfasd');
-        var file = $('input[type = "file"]').val();
-        console.log(file);
-    });*/
+
+    var fileList = new Array();
     $('#abc').click(function () {
-        var formData = new FormData($( "#uploadForm" )[0]);
-        console.log($( "#uploadForm" )[0]);
-        console.log($( "#uploadForm" )[1]);
-        console.log($( "#uploadForm" ));
-        console.log($( "#formData" ));
+        //var formData = new FormData($( "#uploadForm" )[0]);
+        var formData = new FormData();
+        formData.append('name','liuzezhong');
+        formData.append('password','abcdefg');
+        for (var i = 0; i < fileList.length; i++) {
+            formData.append('file[]',fileList[i][0]);
+        }
+
         $.ajax({
             url: 'http://budaohang.com/index.php?m=home&c=index&a=upload_check' ,
             type: 'POST',
@@ -105,6 +211,52 @@
             }
         });
     })
+
+    function imgChange(obj1, obj2) {
+
+        //获取点击的文本框
+        var file = document.getElementById("file");
+        //存放图片的父级元素
+        var imgContainer = document.getElementsByClassName(obj1)[0];
+        //获取的图片文件
+        fileList.push(file.files);
+        var imgArr = [];
+        console.log(file.files[0]);
+        var imgUrl = window.URL.createObjectURL(file.files[0]);
+        imgArr.push(imgUrl);
+        var img = document.createElement("img");
+        img.setAttribute("src", imgArr[0]);
+        var imgAdd = document.createElement("div");
+        imgAdd.setAttribute("class", "z_addImg");
+        imgAdd.appendChild(img);
+        imgContainer.appendChild(imgAdd);
+
+        //遍历获取到得图片文件
+        /*for (var i = 0; i < fileList.length; i++) {
+         console.log(file.files[i]);
+         var imgUrl = window.URL.createObjectURL(file.files[i]);
+
+         console.log(imgUrl);
+         console.log('***************************遍历获取到得图片文件*************************');
+         imgArr.push(imgUrl);
+         console.log(imgArr);
+         var img = document.createElement("img");
+         img.setAttribute("src", imgArr[i]);
+         var imgAdd = document.createElement("div");
+         imgAdd.setAttribute("class", "z_addImg");
+         imgAdd.appendChild(img);
+         imgContainer.appendChild(imgAdd);
+         };
+         console.log(fileList[0][0]);
+         console.log('***************************fileList[0]*************************');
+         console.log(fileList[1][0]);
+         console.log('***************************fileList[1]*************************');*/
+        /*for (var i = 0; i < fileList.length; i++) {
+         console.log(fileList[i][0]);
+         }*/
+
+    };
+
 
 </script>
 </html>

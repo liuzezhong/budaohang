@@ -13,7 +13,7 @@ use Think\Model;
 
 class UploadImageModel extends Model {
     private $_uploadObj = '';
-    const UPLOAD = 'upload';    //定义上传文件夹
+    const UPLOAD = 'Uploads';    //定义上传文件夹
 
     public function __construct() {
         $this->_uploadObj = new  \Think\Upload();
@@ -26,6 +26,16 @@ class UploadImageModel extends Model {
         $res = $this->_uploadObj->upload();
         if($res) {
             return '/' . self::UPLOAD . '/' . $res['file']['savepath'] . $res['file']['savename'];
+        }else{
+            return false;
+        }
+    }
+
+    public function imagesUpload() {
+        $res = $this->_uploadObj->upload();
+
+        if($res) {
+            return $res;
         }else{
             return false;
         }

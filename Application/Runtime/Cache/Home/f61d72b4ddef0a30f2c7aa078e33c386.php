@@ -12,6 +12,16 @@
 
     <link rel="stylesheet" href="Public/fonts/fontawesome/css/font-awesome.min.css">
 
+    <link rel="stylesheet" href="Public/js/custombox/demo.css">
+
+    <link rel="stylesheet" href="Public/js/custombox/custombox.min.css">
+
+    <link rel="stylesheet" href="Public/plugin/jquery-span/jq22.css">
+
+    <link rel="stylesheet" href="Public/plugin/bootstrap-datepicker/css/bootstrap-datepicker.min.css">
+
+    <link rel="stylesheet" href="Public/plugin/bootstrap-from-validation/css/formValidation.css"/>
+
 
     <link href="Public/plugin/userImg/cropper/cropper.min.css" rel="stylesheet">
     <link href="Public/plugin/userImg/sitelogo/sitelogo.css" rel="stylesheet">
@@ -27,12 +37,20 @@
 
     <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
     <script src="Public/js/jquery/jquery-1.11.1.js"></script>
+    <script src="Public/js/custombox/custombox.min.js"></script>
+
+    <script src="Public/plugin/bootstrap-datepicker/js/bootstrap-datepicker.min.js"></script>
+    <script src="Public/plugin/bootstrap-datepicker/locales/bootstrap-datepicker.zh-CN.min.js"></script>
+
+    <script type="text/javascript" src="Public/plugin/bootstrap-from-validation/js/formValidation.js"></script>
+    <script type="text/javascript" src="Public/plugin/bootstrap-from-validation/js/framework/bootstrap.js"></script>
+    <script type="text/javascript" src="Public/plugin/bootstrap-from-validation/js/language/zh_CN.js"></script>
 
     <script src="Public/plugin/userImg/cropper/cropper.min.js"></script>
     <script src="Public/plugin/userImg/sitelogo/sitelogo.js"></script>
     <!-- Include all compiled plugins (below), or include individual files as needed -->
     <script src="Public/js/bootstrap/bootstrap.js"></script>
-    <script src="Public/plugin/uploadify/jquery.uploadify.min.js"></script>
+    <script src="/Public/plugin/uploadify/jquery.uploadify.js"></script>
 
     <script src="Public/js/drag/drag.js"></script>
 
@@ -42,6 +60,7 @@
     <script src="Public/js/bdh/login.js"></script>
     <script src="Public/js/bdh/user.js"></script>
     <script src="Public/js/bdh/image.js"></script>
+    <script src="Public/js/bdh/common.js"></script>
 
     <script src="Public/js/holder/holder.js"></script>
 

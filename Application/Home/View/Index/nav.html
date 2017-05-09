@@ -197,7 +197,7 @@
                 <div class="col-sm-7">
                     <div class="z_photo">
                         <div class="z_file">
-                        <input type="file" name="file" id="file" value="" accept="image/*" multiple onchange="imgChange('z_photo','z_file');" />
+                        <input type="file" name="file[]" id="file" value="" accept="image/*" multiple onchange="imgChange('z_photo','z_file');" />
                     </div>
                 </div>
             </div>
@@ -206,6 +206,7 @@
                 //获取产品类型列表
                 $product_types = D('Product_type')->get_all_product_type();
                 $labels = D('Label')->get_all_label();
+                $types = C('PRODUCT_TYPE');
 
             ?>
     <div class="form-group">
@@ -223,10 +224,10 @@
         <label for="inputEmail3" class="col-sm-3 control-label" name="support">支持平台</label>
         <div class="col-sm-7">
             <label class="checkbox-inline">
-                <input type="checkbox" name="checkbox" value="windows"> Windows
+                <input type="checkbox" name="checkbox" value="Windows"> Windows
             </label>
             <label class="checkbox-inline">
-                <input type="checkbox" name="checkbox" value="linux"> Linux
+                <input type="checkbox" name="checkbox" value="Linux"> Linux
             </label>
             <label class="checkbox-inline">
                 <input type="checkbox" name="checkbox" value="IOS"> IOS
@@ -252,16 +253,11 @@
     <div class="form-group">
         <label for="inputEmail3" class="col-sm-3 control-label" name="type">项目类型</label>
         <div class="col-sm-7">
-            <label class="radio-inline">
-                <input type="radio" name="type" value="kaiyuan"> 开源项目
-            </label>
-            <label class="radio-inline">
-                <input type="radio" name="type" value="chuangye"> 创业项目
-            </label>
-
-            <label class="radio-inline">
-                <input type="radio" name="type" value="other"> 其它
-            </label>
+            <volist name="types" id="type">
+                <label class="radio-inline">
+                    <input type="radio" name="type" value="{$key}"> {$type}
+                </label>
+            </volist>
         </div>
     </div>
     <div class="form-group">
@@ -275,7 +271,7 @@
         <label for="inputEmail3" class="col-sm-3 control-label">产品标签</label>
         <div class="col-sm-7">
             <div class="demo">
-                <div class="plus-tag tagbtn clearfix" id="myTags"></div>
+                <div class="plus-tag tagbtn clearfix tag-select" id="myTags"></div>
                 <div class="plus-tag-add">
                     <div class="input-group">
                         <input type="text" class="form-control">
@@ -319,6 +315,7 @@
 <br><br><br>
 </div>
 <script type="text/javascript">
+    var fileList = new Array();
     $('#add-products').click(function () {
         var product_name = $('input[name = "product_name"]').val();
         var website = $('input[name = "website"]').val();
@@ -330,56 +327,76 @@
         var version = $('input[name = "version"]').val();
         var introduction = $('textarea[name = "introduction"]').val();
         var type = $('input:radio:checked').val();
-        var file = $('input[type = "file"]').val();
-        var support = {};
-
-        $("input[name='checkbox']:checked").each(function  (i) {
-            support[i] = $(this).val();
+        var support = new Array();
+        var label = new Array();
+        $('input[name="checkbox"]:checked').each(function  (i) {
+            support.push($(this).val());
         });
 
+        $('.tag-select a').each(function (j) {
+            label.push($(this).attr('title'));
+        });
+
+        if(!product_name) {
+            return dialog.msg('产品名不能为空！');
+        }
+        if(!website) {
+            return dialog.msg('产品网址 不能为空！');
+        }
+        if(!describes) {
+            return dialog.msg('产品描述不能为空！');
+        }
+        if(fileList.length == 0) {
+            return dialog.msg('图片不能为空！');
+        }
 
 
+        var formData = new FormData();
 
-        var data = {
-          'product_name' : product_name,
-            'website' : website,
-            'describes' : describes,
-            'kind' : kind,
-            'company' : company,
-            'uptime' : uptime,
-            'version' : version,
-            'introduction' : introduction,
-            'support' : support,
-            'type' : type,
-            'file' : file,
-        };
-
-        //console.log(data);
+        formData.append('product_name',product_name);
+        formData.append('website',website);
+        formData.append('describes',describes);
+        formData.append('kind',kind);
+        formData.append('company',company);
+        formData.append('uptime',uptime);
+        formData.append('version',version);
+        formData.append('introduction',introduction);
+        formData.append('type',type);
 
 
+        for (var i = 0; i < fileList.length; i++) {
+            formData.append('file[]',fileList[i][0]);
+        }
+        for(var j = 0; j< support.length; j++) {
+            formData.append('support[]',support[j]);
+        }
+        for(var j = 0; j< label.length; j++) {
+            formData.append('label[]',label[j]);
+        }
 
-        var formData = new FormData($( "#add-product-form" )[0]);
+
         $.ajax({
-            url: 'http://budaohang.com/index.php?m=home&c=index&a=upload_check' ,
+            url: 'index.php?m=home&c=product&a=addproduct' ,
             type: 'POST',
+            dataType: 'JSON',
             data: formData,
             async: false,
             cache: false,
             contentType: false,
             processData: false,
-            success: function (returndata) {
-                alert('成功');
+            success: function (result) {
+                dialog.msg_url(result.message,'');
             },
-            error: function (returndata) {
-                alert('失败');
+            error: function (result) {
+
+                dialog.msg(result.message);
             }
         });
 
     });
 
 
-</script>
-<script>
+
 
     $(function() {
 
@@ -394,6 +411,7 @@
 
 
         $('#sandbox-container').datepicker({
+            //format: 'yyyy-mm-dd',
             language: "zh-CN",
             orientation: "bottom auto",
             todayHighlight: true
@@ -423,32 +441,24 @@
         doc.addEventListener('DOMContentLoaded', recalc, false);
     })(document, window);
 
+
     function imgChange(obj1, obj2) {
         //获取点击的文本框
         var file = document.getElementById("file");
-        console.log(file);
         //存放图片的父级元素
         var imgContainer = document.getElementsByClassName(obj1)[0];
-
         //获取的图片文件
-        var fileList = file.files;
-        console.log(fileList);
-        //文本框的父级元素
-        var input = document.getElementsByClassName(obj2)[0];
+        fileList.push(file.files);
         var imgArr = [];
-        //遍历获取到得图片文件
-        for (var i = 0; i < fileList.length; i++) {
-            var imgUrl = window.URL.createObjectURL(file.files[i]);
-            imgArr.push(imgUrl);
-            console.log(imgArr);
-            var img = document.createElement("img");
-            img.setAttribute("src", imgArr[i]);
-            var imgAdd = document.createElement("div");
-            imgAdd.setAttribute("class", "z_addImg");
-            imgAdd.appendChild(img);
-            imgContainer.appendChild(imgAdd);
-        };
-        imgRemove();
+        var imgUrl = window.URL.createObjectURL(file.files[0]);
+        imgArr.push(imgUrl);
+        var img = document.createElement("img");
+        img.setAttribute("src", imgArr[0]);
+        var imgAdd = document.createElement("div");
+        imgAdd.setAttribute("class", "z_addImg");
+        imgAdd.appendChild(img);
+        imgContainer.appendChild(imgAdd);
+
     };
 
     function imgRemove() {
@@ -484,9 +494,7 @@
 
 
 
-</script>
 
-<script type="text/javascript">
 
     var FancyForm=function(){
         return{
@@ -550,8 +558,7 @@
                 };
 
                 isMaxTips=function(){
-                    return
-                    $("a",a).length>=G_tocard_maxTips
+                    return $("a",a).length>=G_tocard_maxTips
                 };
 
                 setTips=function(c,d){
@@ -696,9 +703,5 @@
     })();
 
 
-
-</script>
-
-<script type="text/javascript">
 
 </script>

@@ -60,6 +60,7 @@
     <script src="Public/js/bdh/login.js"></script>
     <script src="Public/js/bdh/user.js"></script>
     <script src="Public/js/bdh/image.js"></script>
+    <script src="Public/js/bdh/common.js"></script>
 
     <script src="Public/js/holder/holder.js"></script>
 

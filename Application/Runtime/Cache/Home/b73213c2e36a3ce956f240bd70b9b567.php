@@ -63,6 +63,7 @@
     <script src="Public/js/bdh/login.js"></script>
     <script src="Public/js/bdh/user.js"></script>
     <script src="Public/js/bdh/image.js"></script>
+    <script src="Public/js/bdh/common.js"></script>
 
     <script src="Public/js/holder/holder.js"></script>
 
@@ -72,6 +73,7 @@
 
 </head>
 <body>
+<script src="Public/js/bdh/common.js"></script>
 <style>
 
 
@@ -262,17 +264,17 @@
                 <div class="col-sm-7">
                     <div class="z_photo">
                         <div class="z_file">
-                        <input type="file" name="file" id="file" value="" accept="image/*" multiple onchange="imgChange('z_photo','z_file');" />
+                        <input type="file" name="file[]" id="file" value="" accept="image/*" multiple onchange="imgChange('z_photo','z_file');" />
                     </div>
                 </div>
             </div>
     </div>
             <?php
- $product_types = D('Product_type')->get_all_product_type(); $labels = D('Label')->get_all_label(); ?>
+ $product_types = D('Product_type')->get_all_product_type(); $labels = D('Label')->get_all_label(); $types = C('PRODUCT_TYPE'); ?>
     <div class="form-group">
         <label for="inputEmail3" class="col-sm-3 control-label">产品类别</label>
         <div class="col-sm-7">
-            <select class="form-control" name="kind">
+            <select class="form-control" name="kind" id="kind">
                 <option value="-1">请选择</option>
                 <?php if(is_array($product_types)): $i = 0; $__LIST__ = $product_types;if( count($__LIST__)==0 ) : echo "" ;else: foreach($__LIST__ as $key=>$type): $mod = ($i % 2 );++$i;?><option value="<?php echo ($type["type_id"]); ?>"><?php echo ($type["type_name"]); ?></option><?php endforeach; endif; else: echo "" ;endif; ?>
             </select>
@@ -282,16 +284,16 @@
         <label for="inputEmail3" class="col-sm-3 control-label" name="support">支持平台</label>
         <div class="col-sm-7">
             <label class="checkbox-inline">
-                <input type="checkbox" name="windows"> Windows
+                <input type="checkbox" name="checkbox" value="Windows"> Windows
             </label>
             <label class="checkbox-inline">
-                <input type="checkbox" name="linux"> Linux
+                <input type="checkbox" name="checkbox" value="Linux"> Linux
             </label>
             <label class="checkbox-inline">
-                <input type="checkbox" name="ios"> IOS
+                <input type="checkbox" name="checkbox" value="IOS"> IOS
             </label>
             <label class="checkbox-inline">
-                <input type="checkbox" name="android"> Android
+                <input type="checkbox" name="checkbox" value="Android"> Android
             </label>
         </div>
     </div>
@@ -304,23 +306,16 @@
     <div class="form-group">
         <label for="inputEmail3" class="col-sm-3 control-label">上线时间</label>
         <div class="col-sm-7">
-            <input type="text" class="form-control " name="uptime" placeholder="如：2017年1月">
+            <input type="text" class="form-control " name="uptime" id="sandbox-container" placeholder="如：2017年1月">
 
         </div>
     </div>
     <div class="form-group">
         <label for="inputEmail3" class="col-sm-3 control-label" name="type">项目类型</label>
         <div class="col-sm-7">
-            <label class="radio-inline">
-                <input type="radio" name="kaiyuan" value="kaiyuan"> 开源项目
-            </label>
-            <label class="radio-inline">
-                <input type="radio" name="chuangye" value="chuangye"> 创业项目
-            </label>
-
-            <label class="radio-inline">
-                <input type="radio" name="other" value="other"> 其它
-            </label>
+            <?php if(is_array($types)): $i = 0; $__LIST__ = $types;if( count($__LIST__)==0 ) : echo "" ;else: foreach($__LIST__ as $key=>$type): $mod = ($i % 2 );++$i;?><label class="radio-inline">
+                    <input type="radio" name="type" value="<?php echo ($key); ?>"> <?php echo ($type); ?>
+                </label><?php endforeach; endif; else: echo "" ;endif; ?>
         </div>
     </div>
     <div class="form-group">
@@ -334,7 +329,7 @@
         <label for="inputEmail3" class="col-sm-3 control-label">产品标签</label>
         <div class="col-sm-7">
             <div class="demo">
-                <div class="plus-tag tagbtn clearfix" id="myTags"></div>
+                <div class="plus-tag tagbtn clearfix tag-select" id="myTags"></div>
                 <div class="plus-tag-add">
                     <div class="input-group">
                         <input type="text" class="form-control">
@@ -366,7 +361,7 @@
 
     <div class="form-group">
         <div class="col-sm-offset-4 col-sm-8">
-            <button type="button" class="btn btn-default " id="add-product">提交产品</button>
+            <button type="button" class="btn btn-default " id="add-products">提交产品</button>
         </div>
     </div>
 
@@ -376,106 +371,88 @@
 <br><br><br>
 </div>
 <script type="text/javascript">
-    $(document).ready(function() {
-        // Generate a simple captcha
-        function randomNumber(min, max) {
-            return Math.floor(Math.random() * (max - min + 1) + min);
-        };
-        $('#captchaOperation').html([randomNumber(1, 100), '+', randomNumber(1, 200), '='].join(' '));
+    var fileList = new Array();
+    $('#add-products').click(function () {
+        var product_name = $('input[name = "product_name"]').val();
+        var website = $('input[name = "website"]').val();
+        var describes = $('input[name = "describes"]').val();
+        var kind = $('#kind').val();
 
-        $('#defaultForm').formValidation({
-            message: 'This value is not valid',
-            icon: {
-                valid: 'fa fa-check',
-                invalid: 'fa fa-remove',
-                validating: 'fa  fa-refresh'
+        var company = $('input[name = "company"]').val();
+        var uptime = $('input[name = "uptime"]').val();
+        var version = $('input[name = "version"]').val();
+        var introduction = $('textarea[name = "introduction"]').val();
+        var type = $('input:radio:checked').val();
+        var support = new Array();
+        var label = new Array();
+        $('input[name="checkbox"]:checked').each(function  (i) {
+            support.push($(this).val());
+        });
+
+        $('.tag-select a').each(function (j) {
+            label.push($(this).attr('title'));
+        });
+
+        if(!product_name) {
+            return dialog.msg('产品名不能为空！');
+        }
+        if(!website) {
+            return dialog.msg('产品网址 不能为空！');
+        }
+        if(!describes) {
+            return dialog.msg('产品描述不能为空！');
+        }
+        if(fileList.length == 0) {
+            return dialog.msg('图片不能为空！');
+        }
+
+
+        var formData = new FormData();
+
+        formData.append('product_name',product_name);
+        formData.append('website',website);
+        formData.append('describes',describes);
+        formData.append('kind',kind);
+        formData.append('company',company);
+        formData.append('uptime',uptime);
+        formData.append('version',version);
+        formData.append('introduction',introduction);
+        formData.append('type',type);
+
+
+        for (var i = 0; i < fileList.length; i++) {
+            formData.append('file[]',fileList[i][0]);
+        }
+        for(var j = 0; j< support.length; j++) {
+            formData.append('support[]',support[j]);
+        }
+        for(var j = 0; j< label.length; j++) {
+            formData.append('label[]',label[j]);
+        }
+
+
+        $.ajax({
+            url: 'index.php?m=home&c=product&a=addproduct' ,
+            type: 'POST',
+            dataType: 'JSON',
+            data: formData,
+            async: false,
+            cache: false,
+            contentType: false,
+            processData: false,
+            success: function (result) {
+                dialog.msg_url(result.message,'');
             },
-            fields: {
-                firstName: {
-                    row: '.col-sm-4',
-                    validators: {
-                        notEmpty: {
-                            message: 'The first name is required'
-                        }
-                    }
-                },
-                lastName: {
-                    row: '.col-sm-4',
-                    validators: {
-                        notEmpty: {
-                            message: 'The last name is required'
-                        }
-                    }
-                },
+            error: function (result) {
 
-                username: {
-                    message: 'The username is not valid',
-                    validators: {
-                        notEmpty: {
-                            message: '用户名必须设置'
-                        },
-                        stringLength: {
-                            min: 6,
-                            max: 30,
-                            message: '用户名必须在6-30个字符之间'
-                        },
-                        regexp: {
-                            regexp: /^[a-zA-Z0-9_\.]+$/,
-                            message: 'The username can only consist of alphabetical, number, dot and underscore'
-                        }
-                    }
-                },
-                email: {
-                    validators: {
-                        notEmpty: {
-                            message: '电子邮件不能为空'
-                        },
-                        emailAddress: {
-                            message: '请输入有效的电子邮件地址'
-                        }
-                    }
-                },
-                password: {
-                    validators: {
-                        notEmpty: {
-                            message: '密码不能为空'
-                        },
-                        different: {
-                            field: 'username',
-                            message: '密码不能和用户名相同'
-                        }
-                    }
-                },
-                gender: {
-                    validators: {
-                        notEmpty: {
-                            message: '必须选择一个性别'
-                        }
-                    }
-                },
-                captcha: {
-                    validators: {
-                        callback: {
-                            message: 'Wrong answer',
-                            callback: function(value, validator, $field) {
-                                var items = $('#captchaOperation').html().split(' '), sum = parseInt(items[0]) + parseInt(items[2]);
-                                return value == sum;
-                            }
-                        }
-                    }
-                },
-                agree: {
-                    validators: {
-                        notEmpty: {
-                            message: 'You must agree with the terms and conditions'
-                        }
-                    }
-                }
+                dialog.msg(result.message);
             }
         });
+
     });
-</script>
-<script>
+
+
+
 
     $(function() {
 
@@ -490,6 +467,7 @@
 
 
         $('#sandbox-container').datepicker({
+            //format: 'yyyy-mm-dd',
             language: "zh-CN",
             orientation: "bottom auto",
             todayHighlight: true
@@ -519,29 +497,24 @@
         doc.addEventListener('DOMContentLoaded', recalc, false);
     })(document, window);
 
+
     function imgChange(obj1, obj2) {
         //获取点击的文本框
         var file = document.getElementById("file");
-
         //存放图片的父级元素
         var imgContainer = document.getElementsByClassName(obj1)[0];
         //获取的图片文件
-        var fileList = file.files;
-        //文本框的父级元素
-        var input = document.getElementsByClassName(obj2)[0];
+        fileList.push(file.files);
         var imgArr = [];
-        //遍历获取到得图片文件
-        for (var i = 0; i < fileList.length; i++) {
-            var imgUrl = window.URL.createObjectURL(file.files[i]);
-            imgArr.push(imgUrl);
-            var img = document.createElement("img");
-            img.setAttribute("src", imgArr[i]);
-            var imgAdd = document.createElement("div");
-            imgAdd.setAttribute("class", "z_addImg");
-            imgAdd.appendChild(img);
-            imgContainer.appendChild(imgAdd);
-        };
-        imgRemove();
+        var imgUrl = window.URL.createObjectURL(file.files[0]);
+        imgArr.push(imgUrl);
+        var img = document.createElement("img");
+        img.setAttribute("src", imgArr[0]);
+        var imgAdd = document.createElement("div");
+        imgAdd.setAttribute("class", "z_addImg");
+        imgAdd.appendChild(img);
+        imgContainer.appendChild(imgAdd);
+
     };
 
     function imgRemove() {
@@ -577,9 +550,7 @@
 
 
 
-</script>
 
-<script type="text/javascript">
 
     var FancyForm=function(){
         return{
@@ -643,8 +614,7 @@
                 };
 
                 isMaxTips=function(){
-                    return
-                    $("a",a).length>=G_tocard_maxTips
+                    return $("a",a).length>=G_tocard_maxTips
                 };
 
                 setTips=function(c,d){
@@ -790,91 +760,6 @@
 
 
 
-</script>
-
-<script type="text/javascript">
-    $(document).ready(function() {
-        // Generate a simple captcha
-        function randomNumber(min, max) {
-            return Math.floor(Math.random() * (max - min + 1) + min);
-        };
-        $('#captchaOperation').html([randomNumber(1, 100), '+', randomNumber(1, 200), '='].join(' '));
-
-        $('#add-product-form').formValidation({
-            message: 'This value is not valid',
-            icon: {
-                valid: 'fa fa-check',
-                invalid: 'fa fa-remove',
-                validating: 'fa  fa-refresh'
-            },
-            fields: {
-
-                product_name: {
-                    message: 'The username is not valid',
-                    validators: {
-                        notEmpty: {
-                            message: '用户名必须设置'
-                        },
-                        stringLength: {
-                            min: 6,
-                            max: 30,
-                            message: '用户名必须在6-30个字符之间'
-                        },
-                        regexp: {
-                            regexp: /^[a-zA-Z0-9_\.]+$/,
-                            message: 'The username can only consist of alphabetical, number, dot and underscore'
-                        }
-                    }
-                },
-                email: {
-                    validators: {
-                        notEmpty: {
-                            message: '电子邮件不能为空'
-                        },
-                        emailAddress: {
-                            message: '请输入有效的电子邮件地址'
-                        }
-                    }
-                },
-                password: {
-                    validators: {
-                        notEmpty: {
-                            message: '密码不能为空'
-                        },
-                        different: {
-                            field: 'username',
-                            message: '密码不能和用户名相同'
-                        }
-                    }
-                },
-                gender: {
-                    validators: {
-                        notEmpty: {
-                            message: '必须选择一个性别'
-                        }
-                    }
-                },
-                captcha: {
-                    validators: {
-                        callback: {
-                            message: 'Wrong answer',
-                            callback: function(value, validator, $field) {
-                                var items = $('#captchaOperation').html().split(' '), sum = parseInt(items[0]) + parseInt(items[2]);
-                                return value == sum;
-                            }
-                        }
-                    }
-                },
-                agree: {
-                    validators: {
-                        notEmpty: {
-                            message: 'You must agree with the terms and conditions'
-                        }
-                    }
-                }
-            }
-        });
-    });
 </script>
 
 
